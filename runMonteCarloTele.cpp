@@ -4,124 +4,40 @@
 #include <stdlib.h>
 #include "TFile.h"
 #include "TH1F.h"
-#include "TH2F.h"
 #include "TMath.h"
-
-#define PI 3.141592653589793
 
 float getRandomFraction(int fracSize);
 float getPhi(int fracSize);
 float getTheta(int fracSize);
 float getPlanePos(int fracSize, float dimSize);
-float getRExit(float trajPhi, float& xExit, float& yExit);
+float getRExit(float trajPhi, float planeDim, float xExit, float yExit);
+float getLFraction(const int nEvtSim, const float planeL);
 
 int main(int argc, char*argv[])
 {
-  if(argc!=3){
-    std::cout << "Usage: testProcess <nEvtSim> <outFileName>" << std::endl;
+  if(argc!=5){
+    std::cout << "Usage: testProcess <nEvtSim> <outFileName> <nL> <maxL>" << std::endl;
     return 1;
   }
 
   const int nEvtSim = std::atoi(argv[1]);
-  const float thetaBound = PI/2;
-  const int fracSize = 10000;
+  const int nL = std::atoi(argv[3]);
+  const int maxL = std::atoi(argv[4]);
 
-  const float dimPlane = 10.0; 
-  const float rHemi = dimPlane/2.0*TMath::Sqrt(2.0);
-
-  std::vector<float>* phiHemi_p = new std::vector<float>;
-  std::vector<float>* thetaHemi_p = new std::vector<float>;
-  std::vector<float>* hemiX_p = new std::vector<float>;
-  std::vector<float>* hemiY_p = new std::vector<float>;
-
-  std::vector<float>* planeX1_p = new std::vector<float>;
-  std::vector<float>* planeY1_p = new std::vector<float>;
-
-  std::vector<float>* delR_p = new std::vector<float>;
-  std::vector<float>* delL_p = new std::vector<float>;
-
-  std::vector<float>* trajPhi_p = new std::vector<float>;
-  std::vector<float>* rLeftTraj_p = new std::vector<float>;
-
-  for(int genIter = 0; genIter < nEvtSim; genIter++){
-    phiHemi_p->push_back(getPhi(fracSize));
-    thetaHemi_p->push_back(getTheta(fracSize));
-
-    hemiX_p->push_back(rHemi*cos(thetaHemi_p->at(genIter))*cos(phiHemi_p->at(genIter)));
-    hemiY_p->push_back(rHemi*cos(thetaHemi_p->at(genIter))*sin(phiHemi_p->at(genIter)));
-
-    planeX1_p->push_back(getPlanePos(fracSize, dimPlane));
-    planeY1_p->push_back(getPlanePos(fracSize, dimPlane));
-
-    delL_p->push_back(rHemi*sin(thetaHemi_p->at(genIter)));
-
-    float delX = hemiX_p->at(genIter) - planeX1_p->at(genIter);
-    float delY = hemiY_p->at(genIter) - planeY1_p->at(genIter);
-
-    delR_p->push_back(TMath::Sqrt(delX*delX + delY*delY));
-    trajPhi_p->push_back(TMath::ATan2(delY, delX));
-
-    float xExit = -999.0;
-    float yExit = -999.0;
-
-    getXYExit(trajPhi_p->push_back(genIter), planeDim, xExit, yExit);
-
-
-  }
 
   TFile* outFile_p = new TFile(Form("%s.root", argv[2]), "UPDATE");
-  TH2F* inPhiTheta_p = new TH2F("inPhiTheta_h", "inPhiTheta_h", 100, 0, 2*PI, 100, 0, thetaBound);
-  TH2F* inXY1_p = new TH2F("inXY1_h", "inXY1_h", 100, -dimPlane/2.0, dimPlane/2.0, 100, -dimPlane/2.0, dimPlane/2.0);
-  TH1F* delLOverDelR_p = new TH1F("delLOverDelR_h", "delLOverDelR_h", 100, 0, 20);
+  TH1F* lAcceptance_p = new TH1F("lAcceptance_h", "lAcceptance_h", nL, 0, maxL);
 
-  for(int genIter = 0; genIter < nEvtSim; genIter++){
-    if(TMath::Abs(thetaBound/2 - thetaHemi_p->at(genIter)) > thetaBound) std::cout << "thetaHemi Error" << std::endl;
-
-    inPhiTheta_p->Fill(phiHemi_p->at(genIter), thetaHemi_p->at(genIter));
-    inXY1_p->Fill(planeX1_p->at(genIter), planeY1_p->at(genIter));
-    delLOverDelR_p->Fill(delL_p->at(genIter)/delR_p->at(genIter));
+  for(int lIter = 0; lIter < nL; lIter++){
+    float planeL = ((float)lIter)/((float)nL)*(float)maxL;
+    lAcceptance_p->SetBinContent(lIter+1, getLFraction(nEvtSim, planeL));
   }
 
-
-  inPhiTheta_p->Write("", TObject::kOverwrite);
-  delete inPhiTheta_p;
-
-  inXY1_p->Write("", TObject::kOverwrite);
-  delete inXY1_p;
-
-  delLOverDelR_p->Write("", TObject::kOverwrite);
-  delete delLOverDelR_p;
+  lAcceptance_p->Write("", TObject::kOverwrite);
+  delete lAcceptance_p;
 
   outFile_p->Close();
   delete outFile_p;
-
-  phiHemi_p->clear();
-  thetaHemi_p->clear();
-  hemiX_p->clear();
-  hemiY_p->clear();
-
-  planeX1_p->clear();
-  planeY1_p->clear();
-
-  delR_p->clear();
-  delL_p->clear();
-
-  trajPhi_p->clear();
-  rLeftTraj_p->clear();
-
-  delete phiHemi_p;
-  delete thetaHemi_p;
-  delete hemiX_p;
-  delete hemiY_p;
-
-  delete planeX1_p;
-  delete planeY1_p;
-
-  delete delR_p;
-  delete delL_p;
-
-  delete trajPhi_p;
-  delete rLeftTraj_p;
 
   return 0;
 }
@@ -135,13 +51,13 @@ float getRandomFraction(int fracSize)
 
 float getPhi(int fracSize)
 {
-  return 2*PI*getRandomFraction(fracSize);
+  return 2*TMath::Pi()*getRandomFraction(fracSize);
 }
 
 float getTheta(int fracSize)
 {
   float outTheta = TMath::ACos(2*getRandomFraction(fracSize) - 1);
-  if(outTheta > PI/2.0) outTheta = PI - outTheta;
+  if(outTheta > TMath::Pi()/2.0) outTheta = TMath::Pi() - outTheta;
   return outTheta;
 }
 
@@ -152,18 +68,50 @@ float getPlanePos(int fracSize, float dimSize)
   return outPos;
 }
 
-float getRExit(float trajPhi, float planeDim, float& xExit, float& yExit)
+float getRExit(float trajPhi, float planeDim, float xHit, float yHit)
 {
-  float xHi = planeDim/2.0;
-  float xLow = -planeDim/2.0;
-  float yHi = planeDim/2.0;
-  float yLow = -planeDim/2.0;
+  float xEdge = planeDim/2.0;
+  if(TMath::Abs(trajPhi) > TMath::Pi()/2.0) xEdge = -planeDim/2.0;
+  float yEdge = planeDim/2.0;
+  if(trajPhi < 0) yEdge = -planeDim/2.0;
 
-  if(trajPhi >= 0) yExit = yHi;
-  else yExit = yLow;
+  float delX = TMath::Abs(xEdge - xHit);
+  float delY = TMath::Abs(yEdge - yHit);
 
-  if(TMath::Abs(trajPhi) < TMath::Pi()/2) xExit = xHi;
-  else xExit = xLow;
+  if(TMath::Abs(trajPhi) > TMath::Pi()/2) trajPhi = TMath::Pi() - trajPhi;
 
-  return;
+  if(delX < delY) return delX/cos(trajPhi);
+  else return delY/sin(trajPhi);
+}
+
+float getLFraction(const int nEvtSim, const float planeL)
+{
+  float nEvtPass = 0;
+
+  const int fracSize = 10000;
+  const float dimPlane = 10.0;
+  const float rHemi = dimPlane/2.0;
+
+  for(int genIter = 0; genIter < nEvtSim; genIter++){
+    float phiHemi = getPhi(fracSize);
+    float thetaHemi = getTheta(fracSize);
+    float planeX1 = getPlanePos(fracSize, dimPlane);
+    float planeY1 = getPlanePos(fracSize, dimPlane);
+
+
+    float hemiX = rHemi*cos(thetaHemi)*cos(phiHemi);
+    float hemiY = rHemi*cos(thetaHemi)*sin(phiHemi);
+    float delL = rHemi*sin(thetaHemi);
+
+    float delX = hemiX - planeX1;
+    float delY = hemiY - planeY1;
+    float delR = TMath::Sqrt(delX*delX + delY*delY);
+    float trajPhi = TMath::ATan2(delY, delX);
+
+    float rExit = getRExit(trajPhi, dimPlane, planeX1, planeY1);
+
+    if((delL/delR)*rExit > planeL) nEvtPass++;
+  }
+
+  return nEvtPass/((float)nEvtSim);
 }
