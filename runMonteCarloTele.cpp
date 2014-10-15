@@ -6,12 +6,17 @@
 #include "TH1F.h"
 #include "TMath.h"
 
+#include "boost/random/mersenne_twister.hpp"
+#include "boost/random/uniform_int_distribution.hpp"
+
 float getRandomFraction(int fracSize);
 float getPhi(int fracSize);
 float getTheta(int fracSize);
 float getPlanePos(int fracSize, float dimSize);
 float getRExit(float trajPhi, float planeDim, float xExit, float yExit);
 float getLFraction(const int nEvtSim, const float planeL);
+
+boost::random::mt19937 gen;
 
 int main(int argc, char*argv[])
 {
@@ -42,10 +47,10 @@ int main(int argc, char*argv[])
   return 0;
 }
 
-
 float getRandomFraction(int fracSize)
 {
-  float fracNum = std::rand()%(fracSize+1);
+  boost::random::uniform_int_distribution<> dist(0, fracSize);
+  float fracNum = dist(gen);
   return fracNum/((float)fracSize);
 }
 
@@ -97,7 +102,7 @@ float getLFraction(const int nEvtSim, const float planeL)
 
   const int fracSize = 10000;
   const float dimPlane = 10.0;
-  const float rHemi = dimPlane/2.0;
+  const float rHemi = dimPlane/2.0*TMath::Sqrt(2.0);
 
   for(int genIter = 0; genIter < nEvtSim; genIter++){
     float phiHemi = getPhi(fracSize);
@@ -116,10 +121,7 @@ float getLFraction(const int nEvtSim, const float planeL)
 
     float rExit = getRExit(trajPhi, dimPlane, planeX1, planeY1);
 
-    if((delL/delR)*rExit > planeL) nEvtPass++;
-    else if(planeL == 0){
-      std::cout << "delL, delR, rExit, frac: " << delL << ", " << delR << ", " << rExit << ", " << delL/delR*rExit << std::endl;
-    }
+    if((delL/delR)*rExit >= planeL) nEvtPass++;
   }
 
   return nEvtPass/((float)nEvtSim);
