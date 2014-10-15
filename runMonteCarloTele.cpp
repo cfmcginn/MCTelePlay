@@ -75,18 +75,25 @@ float getRExit(float trajPhi, float planeDim, float xHit, float yHit)
   float yEdge = planeDim/2.0;
   if(trajPhi < 0) yEdge = -planeDim/2.0;
 
+  trajPhi = TMath::Abs(trajPhi);
+
   float delX = TMath::Abs(xEdge - xHit);
   float delY = TMath::Abs(yEdge - yHit);
 
-  if(TMath::Abs(trajPhi) > TMath::Pi()/2) trajPhi = TMath::Pi() - trajPhi;
+  if(trajPhi > TMath::Pi()/2) trajPhi = TMath::Pi() - trajPhi;
 
-  if(delX < delY) return delX/cos(trajPhi);
-  else return delY/sin(trajPhi);
+  float delRX = delX/cos(trajPhi);
+  float delRY = delY/sin(trajPhi);
+
+  if(delRX < delRY) return delRX;
+  else return delRY;
 }
 
 float getLFraction(const int nEvtSim, const float planeL)
 {
   float nEvtPass = 0;
+
+  std::cout << planeL << std::endl;
 
   const int fracSize = 10000;
   const float dimPlane = 10.0;
@@ -97,7 +104,6 @@ float getLFraction(const int nEvtSim, const float planeL)
     float thetaHemi = getTheta(fracSize);
     float planeX1 = getPlanePos(fracSize, dimPlane);
     float planeY1 = getPlanePos(fracSize, dimPlane);
-
 
     float hemiX = rHemi*cos(thetaHemi)*cos(phiHemi);
     float hemiY = rHemi*cos(thetaHemi)*sin(phiHemi);
@@ -111,6 +117,9 @@ float getLFraction(const int nEvtSim, const float planeL)
     float rExit = getRExit(trajPhi, dimPlane, planeX1, planeY1);
 
     if((delL/delR)*rExit > planeL) nEvtPass++;
+    else if(planeL == 0){
+      std::cout << "delL, delR, rExit, frac: " << delL << ", " << delR << ", " << rExit << ", " << delL/delR*rExit << std::endl;
+    }
   }
 
   return nEvtPass/((float)nEvtSim);
