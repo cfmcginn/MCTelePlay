@@ -61,8 +61,7 @@ float getPhi(int fracSize)
 
 float getTheta(int fracSize)
 {
-  float outTheta = TMath::ACos(2*getRandomFraction(fracSize) - 1);
-  if(outTheta > TMath::Pi()/2.0) outTheta = TMath::Pi() - outTheta;
+  float outTheta = TMath::ACos(TMath::Power((getRandomFraction(fracSize), 1/3.95));
   return outTheta;
 }
 
