@@ -43,6 +43,17 @@ const float decayRate = 0.01;
 const float muonFlux = 0.007;
 const float muonAngularPower = 1.95;  //if you change this, you should probably change in integral in the main function too!
 
+//maximum electron energy allowed (in real life its half the mass of a muon ~52.85)
+const float electronMaxEnergy = 55.0;
+
+//dR step size used for calculating the electron energy loss (smaller dR leads to better calculation within reason, but also makes calculation longer) in cm
+const float dRstep = 0.01;
+
+//electron dE/dx values; S is in scintillator; F is in the foam, Ein MeV, x in cm
+const float dEdxS = 2.5;
+const float dEdxF = 2.5;
+
+//some useful functions
 //uses Boost library; mersenne twister
 float getRandom()
 {
@@ -72,6 +83,10 @@ float getThetaMuon()
 	return acos(pow((double)rand, (double)1.0/(2.0+muonAngularPower)));
 }
 
+
+
+//actual generator starts here
+//returns muon information
 Muon getEvent(float time, bool SignalOnly)
 {
 	Muon muon;
@@ -169,5 +184,86 @@ Muon getEvent(float time, bool SignalOnly)
 	else muon.A = false;
 
 	return muon;
+}
+
+
+Electron getElectron(float xDecay, float yDecay, float zDecay)
+{
+	Electron e;
+
+	e.theta = getThetaUniform();
+	e.phi   = getPhi();
+
+	e.xOrigin = xDecay;
+	e.yOrigin = yDecay;
+	e.zOrigin = zDecay;
+
+	//energy is uniformly distributed for now (change this distribution to simulate real life if wanted)
+	e.energy = getRandom()*electronMaxEnergy;
+
+	//calculation of electron trajectory and energy deposit; x,y,z,E are working variables for stepping through the trajectory
+	float x = e.xOrigin;
+	float y = e.yOrigin;
+	float z = e.zOrigin;
+	float E = e.energy;
+	float energyDetected = 0;
+
+	bool isInSignalRegion = true;
+	bool hasDecayed = false;
+	while(isInSignalRegion)
+	{
+		//updating energy of electron after moving through a distance dRstep in signal region
+		if(z>L1+zS1 && z<L1+zS1+L_Foam)  E = E-dRstep*dEdxF;
+		else
+		{
+			E = E-dRstep*dEdxS;
+			if(hasDecayed == false && E>0)  energyDetected = energyDetected+dRstep*dEdxS;
+		}
+
+		//upating position
+		x = x + dRstep*sin(e.theta)*cos(e.phi);
+		y = y + dRstep*sin(e.theta)*sin(e.phi);
+		z = z + dRstep*cos(e.theta);
+
+		//if the electron as decayed, in the signal region note the position at which is ended
+		if(hasDecayed == false && E<0)
+		{
+			hasDecayed = true;
+			e.xFinal = x;
+			e.yFinal = y;
+			e.zFinal = z;
+		}
+
+		//checking if is in signal region
+		if(fabs(x)>xS1/2.0 || fabs(y)>yS1/2.0 || z < L1 || z>L1+2*zS1+L_Foam) isInSignalRegion = false;
+	}
+
+	//note the position when it exits
+	e.xExit = x;
+	e.yExit = y;
+	e.zExit = z;
+
+	//writing down the energies for the cases of whether or not it decays in or outside the signal region.
+	if(hasDecayed == false)
+	{
+		e.energyLoss = e.energy - E;
+		e.fractionalEnergyLoss = e.energyLoss/e.energy;
+
+		e.xFinal = x;
+		e.yFinal = y;
+		e.zFinal = z;
+	}
+	else
+	{
+		e.energyLoss = e.energy;
+		e.fractionalEnergyLoss = 1;
+	}
+
+	//writing down the detected energies
+	
+	e.energyLossDetected = energyDetected;
+	e.fractionalEnergyLossDetected = energyDetected/e.energy;
+
+	return e;
 }
 

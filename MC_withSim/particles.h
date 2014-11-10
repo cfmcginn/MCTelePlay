@@ -82,3 +82,61 @@ Muon::Muon()
 	zExit = -999;
 	distance = -999;
 }
+
+class Electron
+{
+	public:
+		Electron();
+
+		//initial Energy in MeV/c
+		float energy;
+		float energyLoss;
+		float fractionalEnergyLoss;
+		//this is the energy lost in the signal counters and not the foam
+		float energyLossDetected;
+		float fractionalEnergyLossDetected;
+
+		//origin position and trajectory
+		float xOrigin;
+		float yOrigin;
+		float zOrigin;
+
+		//here phi is from 0-2pi, theta is 0 to pi
+		float phi;
+		float theta;
+
+		//Exit position (assuming it makes it all the way out of the signal region)
+		float xExit;
+		float yExit;
+		float zExit;
+
+		//final point of the electron (equal to x,y,zExit if it doesn't totally decay in detector)
+		//otherwise it is approximately where the electron loses all of its initial energy
+		float xFinal;
+		float yFinal;
+		float zFinal;
+};
+
+Electron::Electron()
+{
+	energy = -999;
+	energyLoss = -999;
+	fractionalEnergyLoss = -999;
+	energyLossDetected = -999;
+	fractionalEnergyLossDetected = -999;
+
+	xOrigin = -999;
+	yOrigin = -999;
+	zOrigin = -999;
+
+	phi = -999;
+	theta = -999;
+
+	xExit = -999;
+	yExit = -999;
+	zExit = -999;
+
+	xFinal = -999;
+	yFinal = -999;
+	zFinal = -999;
+}

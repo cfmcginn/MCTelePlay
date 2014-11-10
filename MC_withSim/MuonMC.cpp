@@ -14,8 +14,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	//signalOnly forces events to decay to an electron (although an extremely small amount of events might still miss the main signal detectors I think)
 	const int events = 10;
-	const int signalOnly = 0;
-
+	const int signalOnly = 1;
 
 	float time = 0;
 	//Rate of muons coming out of the source
@@ -31,8 +30,17 @@ int _tmain(int argc, _TCHAR* argv[])
 		//wait for an amount of time distributed as a exponential described by decayrate muonRate
 		float waitTime = 1/muonRate*log(1.0/getRandom());
 		time = time+waitTime;
+		
+		//generate muon properties
 		Muon muon = getEvent(time, signalOnly);
 
+		//generate electron properties
+		Electron e;
+		if(muon.decay)  e = getElectron(muon.xDecay, muon.yDecay, muon.zDecay);
+
+		//output to TTree here 
+		
+		//output for debugging, comment out when making large samples!
 		
 		std::cout << "Trajectory: " << muon.phi<< " " <<muon.theta << std::endl;
 		std::cout << std::endl;
@@ -46,6 +54,14 @@ int _tmain(int argc, _TCHAR* argv[])
 		std::cout << "Trigger: "<<muon.T<< " " <<muon.S1<<" " << muon.Foam<< " " <<muon.S2<<" " << muon.A<<" " <<muon.decay << std::endl;
 		std::cout << "Decay Coordinates: "<<muon.xDecay<<" " <<muon.yDecay<<" " <<muon.zDecay << std::endl;
 		std::cout << "Exit Coordinates: "<<muon.xExit<<" " << muon.yExit<<" " << muon.zExit<<" " << muon.distance << std::endl;
+		std::cout << std::endl;
+		std::cout << "e Trajectory: " << e.phi << " " <<e.theta << std::endl;
+		std::cout << "e Origin: " << e.xOrigin << " " << e.yOrigin << " " << e.zOrigin << std::endl;
+		std::cout << "e Exit: " << e.xExit << " " << e.yExit << " " << e.zExit << std::endl;
+		std::cout << "e Decay Spot: " << e.xFinal << " " << e.yFinal << " " << e.zFinal << std::endl;
+		
+		std::cout << "Energies: " << e.energy << " " << e.energyLoss << " " << e.fractionalEnergyLoss << " " << e.energyLossDetected << " " << e.fractionalEnergyLossDetected << std::endl;
+		std::cout << std::endl;
 		std::cout << std::endl;
 	}
 
