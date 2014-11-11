@@ -2,6 +2,7 @@
 #include "boost/random/uniform_real_distribution.hpp"
 #include "particles.h"
 #include <cmath>
+#include <fstream>
 
 //rng seed
 boost::mt19937 gen(time(0));
@@ -50,8 +51,14 @@ const float electronMaxEnergy = 55.0;
 const float dRstep = 0.01;
 
 //electron dE/dx values; S is in scintillator; F is in the foam, Ein MeV, x in cm
-const float dEdxS = 2.5;
-const float dEdxF = 2.5;
+//values taken from a the NIST's ESTAR database
+//call getdEdx to fill the arrays
+const float scintillatorDensity = 1.032;
+const float foamDensity = 0.04;
+
+float dEdxEnergies[81];
+float dEdxS[81];
+float dEdxF[81];
 
 //some useful functions
 //uses Boost library; mersenne twister
@@ -81,6 +88,41 @@ float getThetaMuon()
 {
 	float rand = getRandom();
 	return acos(pow((double)rand, (double)1.0/(2.0+muonAngularPower)));
+}
+
+//getting the dEdx data out of files
+void getdEdx()
+{
+	std::fstream myfile("Polystyrene_Stopping_Power_electrons.txt", std::ios_base::in);
+	float temp1, temp2;
+	int i = 0;
+	while(myfile >> temp1 >> temp2)
+	{
+		dEdxEnergies[i] = temp1;
+		dEdxF[i] = temp2;
+		i++;
+	}
+	myfile.close();
+
+	std::fstream myfile2("Scintillator_Stopping_Power_electrons.txt", std::ios_base::in);
+	i = 0;
+	while(myfile2 >> temp1 >> temp2)
+	{
+		dEdxS[i] = temp2;
+		i++;
+	}
+	myfile2.close();
+}
+
+//returns the energy bin index that is 1 greater than where the energy of the particle is
+int getdEdxEnergyBin(float E)
+{
+	int i = 0;
+	while(E > dEdxEnergies[i])
+	{
+		i++;
+	}
+	return i;
 }
 
 
@@ -207,17 +249,20 @@ Electron getElectron(float xDecay, float yDecay, float zDecay)
 	float z = e.zOrigin;
 	float E = e.energy;
 	float energyDetected = 0;
+	int bin = 0;
 
 	bool isInSignalRegion = true;
 	bool hasDecayed = false;
 	while(isInSignalRegion)
 	{
 		//updating energy of electron after moving through a distance dRstep in signal region
-		if(z>L1+zS1 && z<L1+zS1+L_Foam)  E = E-dRstep*dEdxF;
+		//interpolates between the dEdx data point above and below the energy
+		bin = getdEdxEnergyBin(E);
+		if(z>L1+zS1 && z<L1+zS1+L_Foam)  E = E-dRstep*foamDensity*(dEdxF[bin-1]+(dEdxF[bin]-dEdxF[bin-1])/(dEdxEnergies[bin]-dEdxEnergies[bin-1])*(E-dEdxEnergies[bin-1]));
 		else
 		{
-			E = E-dRstep*dEdxS;
-			if(hasDecayed == false && E>0)  energyDetected = energyDetected+dRstep*dEdxS;
+			E = E-dRstep*scintillatorDensity*(dEdxS[bin-1]+(dEdxS[bin]-dEdxS[bin-1])/(dEdxEnergies[bin]-dEdxEnergies[bin-1])*(E-dEdxEnergies[bin-1]));
+			if(hasDecayed == false && E>0.01)  energyDetected = energyDetected+dRstep*scintillatorDensity*(dEdxS[bin-1]+(dEdxS[bin]-dEdxS[bin-1])/(dEdxEnergies[bin]-dEdxEnergies[bin-1])*(E-dEdxEnergies[bin-1]));
 		}
 
 		//upating position
@@ -226,7 +271,7 @@ Electron getElectron(float xDecay, float yDecay, float zDecay)
 		z = z + dRstep*cos(e.theta);
 
 		//if the electron as decayed, in the signal region note the position at which is ended
-		if(hasDecayed == false && E<0)
+		if(hasDecayed == false && E<0.01)
 		{
 			hasDecayed = true;
 			e.xFinal = x;
