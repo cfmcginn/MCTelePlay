@@ -14,27 +14,27 @@ const double pi = 3.141592653;
 //assume all detectors centered around x,y = (0,0)
 
 //trigger idealized to be flat
-const float xT = 20;
-const float yT = 20;
+const float xT = 21;
+const float yT = 21;
 
-const float L1 = 3;
+const float L1 = 5;
 
 //signal counter 1
-const float xS1 = 122.4;
+const float xS1 = 121.9;
 const float yS1 = 61;
-const float zS1 =  15.8;
+const float zS1 =  15.24;
 
 //assumed to have roughly the same dimensions as above;
 //LFoam is thickness of Foam
-const float L_Foam = 4.85;
+const float L_Foam = 5;
 
 //signal counter 2 assumed to have same dimensions as S1
 //L_2 is distance from bottom of S2 to A
-const float L2 = 5;
+const float L2 = 7.5;
 
 //anticoincidence idealized to be flat
-const float xA = 146;
-const float yA = 64;
+const float xA = 143;
+const float yA = 66;
 
 //other parameters to specify
 //probability a muon decays
