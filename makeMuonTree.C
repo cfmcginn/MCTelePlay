@@ -1,7 +1,7 @@
 //=============================================                      
 // Author: Chris McGinn
 //                     
-// DiJet Histogram Maker, Missing Pt
+// Muon Tree Maker
 //                                                                            
 //=============================================     
 
@@ -9,15 +9,11 @@
 #include <vector>
 #include <algorithm>
 
-#include "TTree.h"
 #include "TDatime.h"
-#include "TFile.h"
 #include "MuonTree.h"
 
 #include <fstream>
 #include <iostream>
-
-TFile* outFile_p = 0;
 
 
 Float_t getMedian(std::vector<Float_t> inVect)
@@ -32,7 +28,8 @@ Float_t getMedian(std::vector<Float_t> inVect)
 void findPeak(std::vector<Float_t>* inVect_p, Int_t& peakStart, Int_t& peakEnd)
 {
   Float_t median = getMedian(*inVect_p);
-  median -= 0.5;
+  Float_t medianThresh = -0.5;
+  median += medianThresh;
 
   std::cout << median << std::endl;
 

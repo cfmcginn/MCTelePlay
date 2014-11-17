@@ -8,6 +8,8 @@
 #define MuonTree_h
 
 #include <iostream>
+#include "TTree.h"
+#include "TFile.h"
 
 TTree* muonTree_p = 0;
 
@@ -85,11 +87,11 @@ void CleanupMuonTree()
 }
 
 
-void GetMuonTree(TFile* meanFile_p)
+void GetMuonTree(TFile* muonFile_p)
 {
   std::cout << "Get Muon Tree" << std::endl;
 
-  muonTree_p = (TTree*)meanFile_p->Get("muonTree");
+  muonTree_p = (TTree*)muonFile_p->Get("muonTree");
   GetMuonBranches();
 
   return;
