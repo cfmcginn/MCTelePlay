@@ -98,4 +98,24 @@ void GetMuonTree(TFile* muonFile_p)
 }
 
 
+void InitMuonVar()
+{
+  peakStartCh1_ = 0;
+  peakEndCh1_ = 0;
+  peakSumCh1_ = 0;
+
+  peakStartCh2_ = 0;
+  peakEndCh2_ = 0;
+  peakSumCh2_ = 0;
+
+  for(Int_t iter = 0; iter < nSteps; iter++){
+    timeStamp_[iter] = 0;
+    voltCh1_[iter] = 0;
+    voltCh2_[iter] = 0;
+  }
+
+  return;
+}
+
+
 #endif

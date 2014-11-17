@@ -31,8 +31,6 @@ void findPeak(std::vector<Float_t>* inVect_p, Int_t& peakStart, Int_t& peakEnd)
   Float_t medianThresh = -0.5;
   median += medianThresh;
 
-  std::cout << median << std::endl;
-
   peakStart = -1;
   peakEnd = -1;
   const Int_t peakWidth = 10;
@@ -71,7 +69,7 @@ void findPeak(std::vector<Float_t>* inVect_p, Int_t& peakStart, Int_t& peakEnd)
 }
 
 
-int makeMuonTree(const std::string fList = "", Int_t num = 0)
+int makeMuonTree(const std::string fList = "")
 {
   std::string buffer;
   std::vector<std::string> listOfFiles;
@@ -96,15 +94,13 @@ int makeMuonTree(const std::string fList = "", Int_t num = 0)
 
   std::cout << "FileList Loaded" << std::endl;
 
-  for(Int_t iter = 0; iter < (Int_t)(listOfFiles.size()); iter++){
-    std::cout << listOfFiles[iter] << std::endl;
+  for(Int_t fileIter = 0; fileIter < (Int_t)(listOfFiles.size()); fileIter++){
+    std::cout << listOfFiles[fileIter] << std::endl;
   }
-
-  std::cout << "FileJob: " << listOfFiles[num] << std::endl;
 
   //  setFileTag(inName);
 
-  std::string outName = listOfFiles[num];
+  std::string outName = listOfFiles[0];
   const std::string cullString = "/";
   const std::string cutString = ".csv";
   const std::string repString = "";
@@ -124,65 +120,71 @@ int makeMuonTree(const std::string fList = "", Int_t num = 0)
 
   std::cout << outName << std::endl;
 
-  TFile* outFile_p = new TFile(Form("%s_MuonTree_%d.root", outName.c_str(), num), "UPDATE");
+  TFile* outFile_p = new TFile(Form("%s_MuonTree_MERGE.root", outName.c_str()), "UPDATE");
   InitMuonTree();
 
-  std::ifstream csvFile(listOfFiles[num].c_str());
-  Int_t iter = 0;  
-  std::vector<Float_t>* timeStamp_p = new std::vector<Float_t>;
-  std::vector<Float_t>* voltOutCh1_p = new std::vector<Float_t>;
-  std::vector<Float_t>* voltOutCh2_p = new std::vector<Float_t>;
-  std::string outVal;
+  for(Int_t fileIter = 0; fileIter < (Int_t)(listOfFiles.size()); fileIter++){
+    std::cout << "Event Number: " <<  fileIter << std::endl;
+    InitMuonVar();
 
-  while(true){
-    //    std::cout << iter << std::endl;
-    if(iter%3!=2) std::getline(csvFile, outVal, ',');
-    else std::getline(csvFile, outVal);
+    std::ifstream csvFile(listOfFiles[fileIter].c_str());
+    Int_t iter = 0;  
+    std::vector<Float_t>* timeStamp_p = new std::vector<Float_t>;
+    std::vector<Float_t>* voltOutCh1_p = new std::vector<Float_t>;
+    std::vector<Float_t>* voltOutCh2_p = new std::vector<Float_t>;
+    std::string outVal;
 
-    if(csvFile.eof()) break;
+    while(true){
+      //    std::cout << iter << std::endl;
+      if(iter%3!=2) std::getline(csvFile, outVal, ',');
+      else std::getline(csvFile, outVal);
 
-    std::string cutString2 = "\\^M";
-    std::size_t strIndex2 = outVal.find(cutString2);
-    if(!(strIndex2 == std::string::npos)) outName.replace(strIndex2, cutString2.length(), "");
+      if(csvFile.eof()) break;
+      
+      std::string cutString2 = "\\^M";
+      std::size_t strIndex2 = outVal.find(cutString2);
+      if(!(strIndex2 == std::string::npos)) outName.replace(strIndex2, cutString2.length(), "");
 
-    if(iter > 2){
-      if(iter%3 == 0) timeStamp_p->push_back(std::stof(outVal));
-      if(iter%3 == 1) voltOutCh1_p->push_back(std::stof(outVal));
-      if(iter%3 == 2) voltOutCh2_p->push_back(std::stof(outVal));
+      if(iter > 2){
+	if(iter%3 == 0) timeStamp_p->push_back(std::stof(outVal));
+	if(iter%3 == 1) voltOutCh1_p->push_back(std::stof(outVal));
+	if(iter%3 == 2) voltOutCh2_p->push_back(std::stof(outVal));
+      }
+
+      //    std::cout << iter << ": " << outVal << std::endl;
+      iter++;
     }
 
-    //    std::cout << iter << ": " << outVal << std::endl;
-    iter++;
+    Int_t nentries = (Float_t)(voltOutCh1_p->size());
+    for(Int_t j = 0; j < nentries; j++){
+      //    std::cout << j << ": " << voltOutCh1_p->at(j) << ", " << voltOutCh2_p->at(j) << std::endl;
+      timeStamp_[j] = timeStamp_p->at(j);
+      voltCh1_[j] = voltOutCh1_p->at(j);
+      voltCh2_[j] = voltOutCh2_p->at(j);
+    }
+
+    findPeak(voltOutCh1_p, peakStartCh1_, peakEndCh1_);
+    findPeak(voltOutCh2_p, peakStartCh2_, peakEndCh2_);
+
+    for(Int_t j = peakStartCh1_; j < peakEndCh1_; j++){
+      peakSumCh1_ += voltOutCh1_p->at(j);
+    }
+
+    for(Int_t j = peakStartCh2_; j < peakEndCh2_; j++){
+      peakSumCh2_ += voltOutCh2_p->at(j);
+    }
+
+    muonTree_p->Fill();
+
+    timeStamp_p->clear();
+    voltOutCh1_p->clear();
+    voltOutCh2_p->clear();
+    delete timeStamp_p;
+    delete voltOutCh1_p;
+    delete voltOutCh2_p;
   }
 
-  Int_t nentries = (Float_t)(voltOutCh1_p->size());
-  for(Int_t j = 0; j < nentries; j++){
-    //    std::cout << j << ": " << voltOutCh1_p->at(j) << ", " << voltOutCh2_p->at(j) << std::endl;
-    timeStamp_[j] = timeStamp_p->at(j);
-    voltCh1_[j] = voltOutCh1_p->at(j);
-    voltCh2_[j] = voltOutCh2_p->at(j);
-  }
-
-  findPeak(voltOutCh1_p, peakStartCh1_, peakEndCh1_);
-  findPeak(voltOutCh2_p, peakStartCh2_, peakEndCh2_);
-
-  for(Int_t j = peakStartCh1_; j < peakEndCh1_; j++){
-    peakSumCh1_ += voltOutCh1_p->at(j);
-  }
-
-  for(Int_t j = peakStartCh2_; j < peakEndCh2_; j++){
-    peakSumCh2_ += voltOutCh2_p->at(j);
-  }
-
-  muonTree_p->Fill();
   muonTree_p->Write("", TObject::kOverwrite);
-
-  timeStamp_p->clear();
-  voltOutCh1_p->clear();
-  voltOutCh2_p->clear();
-  delete timeStamp_p;
-  delete voltOutCh1_p;
-  delete voltOutCh2_p;
 
   CleanupMuonTree();
   outFile_p->Close();
@@ -194,14 +196,14 @@ int makeMuonTree(const std::string fList = "", Int_t num = 0)
 
 int main(int argc, char* argv[])
 {
-  if(argc != 3){
-    std::cout << "Usage: makeMuonTree <inputFile> <#>" << std::endl;
+  if(argc != 2){
+    std::cout << "Usage: makeMuonTree <inputFile>" << std::endl;
     return 1;
   }
 
   int rStatus = -1;
 
-  rStatus = makeMuonTree(argv[1], atoi(argv[2]));
+  rStatus = makeMuonTree(argv[1]);
 
   return rStatus;
 }

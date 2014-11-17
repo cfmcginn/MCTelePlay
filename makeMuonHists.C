@@ -33,6 +33,15 @@ int makeMuonHists(const std::string inName)
 
     peakSumCh1_p->Fill(TMath::Abs(peakSumCh1_));
     peakSumCh2_p->Fill(TMath::Abs(peakSumCh2_));
+
+    peakStartCh1_p->Fill(timeStamp_[peakStartCh1_]*TMath::Power(10, 6));
+    peakStartCh2_p->Fill(timeStamp_[peakStartCh2_]*TMath::Power(10, 6));
+
+    peakEndCh1_p->Fill(timeStamp_[peakEndCh1_]*TMath::Power(10, 6));
+    peakEndCh2_p->Fill(timeStamp_[peakEndCh2_]*TMath::Power(10, 6));
+
+    peakWidthCh1_p->Fill((timeStamp_[peakEndCh1_] - timeStamp_[peakStartCh1_])*TMath::Power(10, 6));
+    peakWidthCh2_p->Fill((timeStamp_[peakEndCh2_] - timeStamp_[peakStartCh2_])*TMath::Power(10, 6));
   }
 
   FormatAllHists();
@@ -40,6 +49,16 @@ int makeMuonHists(const std::string inName)
   TFile* outFile_p = new TFile(outName.c_str(), "UPDATE");
   peakSumCh1_p->Write("", TObject::kOverwrite);
   peakSumCh2_p->Write("", TObject::kOverwrite);
+
+  peakStartCh1_p->Write("", TObject::kOverwrite);
+  peakStartCh2_p->Write("", TObject::kOverwrite);
+
+  peakEndCh1_p->Write("", TObject::kOverwrite);
+  peakEndCh2_p->Write("", TObject::kOverwrite);
+
+  peakWidthCh1_p->Write("", TObject::kOverwrite);
+  peakWidthCh2_p->Write("", TObject::kOverwrite);
+
   outFile_p->Close();
   delete outFile_p;
 

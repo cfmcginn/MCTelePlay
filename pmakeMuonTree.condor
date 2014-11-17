@@ -2,7 +2,7 @@ Universe     = vanilla
 Initialdir   = dir_flag
 Notification = Error
 Executable   = dir_flag/makeMuonTree.sh
-Arguments    = arg1 arg2 $(Process)
+Arguments    = arg1 arg2
 GetEnv       = True
 Output       = /net/hisrv0001/home/cfmcginn/logs/log_flag-$(Process).out
 Error        = /net/hisrv0001/home/cfmcginn/logs/log_flag-$(Process).err
@@ -13,4 +13,4 @@ should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
 transfer_input_files = arg1,makeMuonTree.exe
 
-Queue njobs
+Queue 1
