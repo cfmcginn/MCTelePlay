@@ -31,33 +31,38 @@ int makeMuonHists(const std::string inName)
   for(Int_t iter = 0; iter < nentries; iter++){
     muonTree_p->GetEntry(iter);
 
-    peakSumCh1_p->Fill(TMath::Abs(peakSumCh1_));
-    peakSumCh2_p->Fill(TMath::Abs(peakSumCh2_));
+    for(Int_t peakIter = 0; peakIter < nPeaks; peakIter++){
+      peakSumCh1_p[peakIter]->Fill(TMath::Abs(peakSumCh1_[peakIter]));
+      peakSumCh2_p[peakIter]->Fill(TMath::Abs(peakSumCh2_[peakIter]));
 
-    peakStartCh1_p->Fill(timeStamp_[peakStartCh1_]*TMath::Power(10, 6));
-    peakStartCh2_p->Fill(timeStamp_[peakStartCh2_]*TMath::Power(10, 6));
-
-    peakEndCh1_p->Fill(timeStamp_[peakEndCh1_]*TMath::Power(10, 6));
-    peakEndCh2_p->Fill(timeStamp_[peakEndCh2_]*TMath::Power(10, 6));
-
-    peakWidthCh1_p->Fill((timeStamp_[peakEndCh1_] - timeStamp_[peakStartCh1_])*TMath::Power(10, 6));
-    peakWidthCh2_p->Fill((timeStamp_[peakEndCh2_] - timeStamp_[peakStartCh2_])*TMath::Power(10, 6));
+      peakStartCh1_p[peakIter]->Fill(timeStamp_[peakStartCh1_[peakIter]]*TMath::Power(10, 6));
+      peakStartCh2_p[peakIter]->Fill(timeStamp_[peakStartCh2_[peakIter]]*TMath::Power(10, 6));
+      
+      peakEndCh1_p[peakIter]->Fill(timeStamp_[peakEndCh1_[peakIter]]*TMath::Power(10, 6));
+      peakEndCh2_p[peakIter]->Fill(timeStamp_[peakEndCh2_[peakIter]]*TMath::Power(10, 6));
+      
+      peakWidthCh1_p[peakIter]->Fill((timeStamp_[peakEndCh1_[peakIter]] - timeStamp_[peakStartCh1_[peakIter]])*TMath::Power(10, 6));
+      peakWidthCh2_p[peakIter]->Fill((timeStamp_[peakEndCh2_[peakIter]] - timeStamp_[peakStartCh2_[peakIter]])*TMath::Power(10, 6));
+    }
   }
 
   FormatAllHists();
 
   TFile* outFile_p = new TFile(outName.c_str(), "UPDATE");
-  peakSumCh1_p->Write("", TObject::kOverwrite);
-  peakSumCh2_p->Write("", TObject::kOverwrite);
 
-  peakStartCh1_p->Write("", TObject::kOverwrite);
-  peakStartCh2_p->Write("", TObject::kOverwrite);
+  for(Int_t iter = 0; iter < nPeaks; iter++){
+    peakSumCh1_p[iter]->Write("", TObject::kOverwrite);
+    peakSumCh2_p[iter]->Write("", TObject::kOverwrite);
 
-  peakEndCh1_p->Write("", TObject::kOverwrite);
-  peakEndCh2_p->Write("", TObject::kOverwrite);
-
-  peakWidthCh1_p->Write("", TObject::kOverwrite);
-  peakWidthCh2_p->Write("", TObject::kOverwrite);
+    peakStartCh1_p[iter]->Write("", TObject::kOverwrite);
+    peakStartCh2_p[iter]->Write("", TObject::kOverwrite);
+    
+    peakEndCh1_p[iter]->Write("", TObject::kOverwrite);
+    peakEndCh2_p[iter]->Write("", TObject::kOverwrite);
+    
+    peakWidthCh1_p[iter]->Write("", TObject::kOverwrite);
+    peakWidthCh2_p[iter]->Write("", TObject::kOverwrite);
+  }
 
   outFile_p->Close();
   delete outFile_p;

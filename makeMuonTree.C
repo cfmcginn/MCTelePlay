@@ -16,6 +16,18 @@
 #include <iostream>
 
 
+Float_t getMean(std::vector<Float_t>* inVect_p)
+{
+  Float_t mean = 0;
+  Int_t nentries = (Int_t)(inVect_p->size());
+  for(Int_t iter = 0; iter < nentries; iter++){
+    mean += inVect_p->at(iter);
+  }
+
+  return mean/nentries;
+}
+
+
 Float_t getMedian(std::vector<Float_t> inVect)
 {
   std::sort(inVect.begin(), inVect.end());
@@ -25,11 +37,29 @@ Float_t getMedian(std::vector<Float_t> inVect)
 }
 
 
-void findPeak(std::vector<Float_t>* inVect_p, Int_t& peakStart, Int_t& peakEnd)
+Float_t getCutMean(std::vector<Float_t> inVect, Int_t startCut, Int_t stopCut)
 {
-  Float_t median = getMedian(*inVect_p);
-  Float_t medianThresh = -0.5;
-  median += medianThresh;
+  inVect.erase(inVect.begin() + startCut, inVect.begin() + stopCut);
+
+  return getMean(&inVect);
+}
+
+
+Float_t getCutMedian(std::vector<Float_t> inVect, Int_t startCut, Int_t stopCut)
+{
+  inVect.erase(inVect.begin() + startCut, inVect.begin() + stopCut);
+
+  return getMedian(inVect);
+}
+
+
+void findPeak1(std::vector<Float_t>* inVect_p, Float_t& mean, Int_t& peakStart, Int_t& peakEnd)
+{
+  mean = getMean(inVect_p);
+  //  const Float_t meanThresh = -0.5;
+  //  mean += meanThresh;
+
+  std::cout << "mean 1: " << mean << std::endl;
 
   peakStart = -1;
   peakEnd = -1;
@@ -40,7 +70,7 @@ void findPeak(std::vector<Float_t>* inVect_p, Int_t& peakStart, Int_t& peakEnd)
   for(Int_t i = 0; i < nentries; i++){
     Bool_t peakBool = true;
     for(Int_t j = i; j < i+peakWidth; j++){
-      if(inVect_p->at(j) > median){
+      if(inVect_p->at(j) > mean){
 	peakBool = false;
 	break;
       }
@@ -54,7 +84,7 @@ void findPeak(std::vector<Float_t>* inVect_p, Int_t& peakStart, Int_t& peakEnd)
   for(Int_t i = peakStart; i < nentries; i++){
     Bool_t peakBool = true;
     for(Int_t j = i; j < i+peakWidth; j++){
-      if(inVect_p->at(j) < median){
+      if(inVect_p->at(j) < mean){
         peakBool = false;
         break;
       }
@@ -66,6 +96,44 @@ void findPeak(std::vector<Float_t>* inVect_p, Int_t& peakStart, Int_t& peakEnd)
   }
   
   return;
+}
+
+
+void findPeak2(std::vector<Float_t>* inVect_p, Float_t& mean, Int_t& peakStart, Int_t& peakEnd)
+{
+  findPeak1(inVect_p, mean, peakStart, peakEnd);
+  mean = getCutMean(*inVect_p, peakStart, peakEnd);
+  //  const Float_t meanThresh = -0.5;
+  //  mean += meanThresh;
+
+  std::cout << "mean 2: " << mean << std::endl;
+
+  Int_t nentries = (Int_t)(inVect_p->size());
+  for(Int_t i = peakStart; i > 0; i--){
+    if(inVect_p->at(i) > mean){
+      peakStart = i;
+      break;
+    }
+  }
+
+  for(Int_t i = peakEnd; i < nentries; i++){
+    if(inVect_p->at(i) > mean){
+      peakEnd = i;
+      break;
+    }
+  }
+  
+  return;
+}
+
+
+Float_t getPeakSum(std::vector<Float_t>* inVect_p, const Int_t peakStart, const Int_t peakEnd)
+{
+  Float_t sum = 0;
+  for(Int_t iter = peakStart; iter < peakEnd; iter++){
+    sum += inVect_p->at(iter);
+  }
+  return sum;
 }
 
 
@@ -163,16 +231,15 @@ int makeMuonTree(const std::string fList = "")
       voltCh2_[j] = voltOutCh2_p->at(j);
     }
 
-    findPeak(voltOutCh1_p, peakStartCh1_, peakEndCh1_);
-    findPeak(voltOutCh2_p, peakStartCh2_, peakEndCh2_);
+    findPeak1(voltOutCh1_p, meanCh1_[0], peakStartCh1_[0], peakEndCh1_[0]);
+    findPeak1(voltOutCh2_p, meanCh2_[0], peakStartCh2_[0], peakEndCh2_[0]);
+    findPeak2(voltOutCh1_p, meanCh1_[1], peakStartCh1_[1], peakEndCh1_[1]);
+    findPeak2(voltOutCh2_p, meanCh2_[1], peakStartCh2_[1], peakEndCh2_[1]);
 
-    for(Int_t j = peakStartCh1_; j < peakEndCh1_; j++){
-      peakSumCh1_ += voltOutCh1_p->at(j);
-    }
-
-    for(Int_t j = peakStartCh2_; j < peakEndCh2_; j++){
-      peakSumCh2_ += voltOutCh2_p->at(j);
-    }
+    peakSumCh1_[0] = getPeakSum(voltOutCh1_p, peakStartCh1_[0], peakEndCh1_[0]);
+    peakSumCh1_[1] = getPeakSum(voltOutCh1_p, peakStartCh1_[1], peakEndCh1_[1]);
+    peakSumCh2_[0] = getPeakSum(voltOutCh2_p, peakStartCh2_[0], peakEndCh2_[0]);
+    peakSumCh2_[1] = getPeakSum(voltOutCh2_p, peakStartCh2_[1], peakEndCh2_[1]);
 
     muonTree_p->Fill();
 
