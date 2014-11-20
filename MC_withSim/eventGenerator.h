@@ -17,7 +17,7 @@ const double pi = 3.141592653;
 const float xT = 21;
 const float yT = 21;
 
-const float L1 = 5;
+const float L1 = 10;
 
 //signal counter 1
 const float xS1 = 121.9;

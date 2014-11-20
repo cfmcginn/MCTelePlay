@@ -16,7 +16,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	//signalOnly forces events to decay to an electron (although an extremely small amount of events might still miss the main signal detectors I think)
 	const int events = 10000000;
-	const int signalOnly = 0;
+	const int signalOnly = 1;
 
 	float time = 0;
 	//Rate of muons coming out of the source
@@ -31,7 +31,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	getdEdx();
 
 	//output files
-	TFile *outf= new TFile("C:\\Users\\Austin\\Desktop\\1_Percent_Decays_Updated_10MEvents.root","recreate");
+	TFile *outf= new TFile("C:\\Users\\Austin\\Desktop\\SignalOnlyFinalData_10MEvents.root","recreate");
 	TNtuple * ntuple = new TNtuple("Data","Data","eventNumber:time:mPhi:mtheta:xTrigger:yTrigger:xS1Top:yS1top:xS1Bot:yS1Bot:xS2Top:yS2Top:xS2Bot:yS2Bot:xA:yA:T:S1:Foam:S2:A:Decay:xDecay:yDecay:zDecay:xExit:yExit:zExit:ePhi:eTheta:eXExit:eYExit:eZExit:eXFinal:eYFinal:eZFinal:E:ELost:fracELost:ELostDetect:fracELostDetect");
 	
 	for(int i = 0; i<events; i++)
