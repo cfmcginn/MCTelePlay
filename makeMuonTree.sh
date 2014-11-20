@@ -1,14 +1,14 @@
 #!/bin/bash
 
-if [ $# -ne 2 ]
+if [ $# -ne 3 ]
 then 
-  echo "Usage: ./makeMuonTree.sh <inputList> <outDir>"
+  echo "Usage: ./makeMuonTree.sh <inputList> <isCh2> <outDir>"
   exit 1
 fi
 
-echo | awk -v inputList=$1 '{print "./makeMuonTree.exe \""inputList"\""}' | bash
+echo | awk -v inputList=$1 -v isCh2=$2 '{print "./makeMuonTree.exe \""inputList"\" \""isCh2"\""}' | bash
 
-mv *MuonTree*.root $2
+mv *MuonTree*.root $3
 rm *.root 
 
 echo "job done successfully"
