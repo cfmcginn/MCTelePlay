@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iostream>
 
+const Int_t nHeaderLines = 21;
 
 Float_t getMean(std::vector<Float_t>* inVect_p)
 {
@@ -122,35 +123,6 @@ void refinePeak(std::vector<Float_t>* inVect_p, Float_t mean, Int_t startPos, In
 }
 
 
-/*
-void findPeak2(std::vector<Float_t>* inVect_p, Float_t mean, Int_t startPos, Int_t& peakStart, Int_t& peakEnd)
-{
-  findPeak1(inVect_p, mean, peakStart, peakEnd);
-  mean = getCutMean(*inVect_p, peakStart, peakEnd);
-  //  const Float_t meanThresh = -0.5;
-  //  mean += meanThresh;
-
-  std::cout << "mean 2: " << mean << std::endl;
-
-  Int_t nentries = (Int_t)(inVect_p->size());
-  for(Int_t i = peakStart; i > 0; i--){
-    if(inVect_p->at(i) > mean){
-      peakStart = i;
-      break;
-    }
-  }
-
-  for(Int_t i = peakEnd; i < nentries; i++){
-    if(inVect_p->at(i) > mean){
-      peakEnd = i;
-      break;
-    }
-  }
-  
-  return;
-}
-*/
-
 Float_t getPeakSum(std::vector<Float_t>* inVect_p, const Int_t peakStart, const Int_t peakEnd)
 {
   Float_t sum = 0;
@@ -227,23 +199,39 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
     std::string outVal;
 
     while(true){
-      //    std::cout << iter << std::endl;
-      if(iter%3!=2) std::getline(csvFile, outVal, ',');
-      else std::getline(csvFile, outVal);
+      if(iter < nHeaderLines) std::getline(csvFile, outVal);
+      else if(isCh2){
+	if(iter%3!=2) std::getline(csvFile, outVal, ',');
+	else std::getline(csvFile, outVal);
 
-      if(csvFile.eof()) break;
-      
-      std::string cutString2 = "\\^M";
-      std::size_t strIndex2 = outVal.find(cutString2);
-      if(!(strIndex2 == std::string::npos)) outName.replace(strIndex2, cutString2.length(), "");
+	if(csvFile.eof()) break;
+	
+	std::string cutString2 = "\\^M";
+	std::size_t strIndex2 = outVal.find(cutString2);
+	if(!(strIndex2 == std::string::npos)) outName.replace(strIndex2, cutString2.length(), "");
 
-      if(iter > 2){
-	if(iter%3 == 0) timeStamp_p->push_back(std::stof(outVal));
-	if(iter%3 == 1) voltOutCh1_p->push_back(std::stof(outVal));
-	if(isCh2 && iter%3 == 2) voltOutCh2_p->push_back(std::stof(outVal));
+	if(iter > 2){
+	  if(iter%3 == 0) timeStamp_p->push_back(std::stof(outVal));
+	  if(iter%3 == 1) voltOutCh1_p->push_back(std::stof(outVal));
+	  if(iter%3 == 2) voltOutCh2_p->push_back(std::stof(outVal));
+	}
+      }
+      else{
+        if(iter%2!=1) std::getline(csvFile, outVal, ',');
+        else std::getline(csvFile, outVal);
+
+        if(csvFile.eof()) break;
+
+	std::string cutString2 = "\\^M";
+	std::size_t strIndex2 = outVal.find(cutString2);
+        if(!(strIndex2 == std::string::npos)) outName.replace(strIndex2, cutString2.length(), "");
+
+        if(iter > 1){
+          if(iter%2 == 0) timeStamp_p->push_back(std::stof(outVal));
+          if(iter%2 == 1) voltOutCh1_p->push_back(std::stof(outVal));
+        }
       }
 
-      //    std::cout << iter << ": " << outVal << std::endl;
       iter++;
     }
 
@@ -261,16 +249,12 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
       Int_t startPos = 0;
       if(nPeakCh1_ != 0) startPos = peakEndCh1_[peakIter-1];
 
-      findPeak(voltOutCh1_p, meanCh1_, startPos, (Int_t)(voltOutCh1_p->size()), peakStartCh1_[peakIter], peakEndCh1_[peakIter]);
+      findPeak(voltOutCh1_p, meanCh1_-0.1, startPos, (Int_t)(voltOutCh1_p->size()), peakStartCh1_[peakIter], peakEndCh1_[peakIter]);
       if(peakStartCh1_[peakIter] == -1) break;
       nPeakCh1_++;
     }
 
-    std::cout << "1" << std::endl;
     meanCutCh1_ = getCutMean(*voltOutCh1_p, nPeakCh1_, peakStartCh1_, peakEndCh1_);
-    std::cout << "2" << std::endl;
-
-    std::cout << "Means: " << meanCh1_ << ", " << meanCutCh1_ << std::endl;
 
     for(Int_t peakIter = 0; peakIter < nPeakCh1_; peakIter++){
       Int_t startPos = 0;
@@ -278,13 +262,9 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
       Int_t endPos = voltOutCh1_p->size();
       if(peakIter != nPeakCh1_-1) endPos = peakStartCh1_[peakIter+1];
 
-      std::cout << "iter: " << peakIter << std::endl;
       refinePeak(voltOutCh1_p, meanCutCh1_, startPos, endPos, peakStartCh1_[peakIter], peakEndCh1_[peakIter]);
-      std::cout << "iter: " << peakIter << std::endl;
       peakSumCh1_[peakIter] = getPeakSum(voltOutCh1_p, peakStartCh1_[peakIter], peakEndCh1_[peakIter]);
-      std::cout << "iter: " << peakIter << std::endl;
     }
-    std::cout << "3" << std::endl;
 
     if(isCh2){
       meanCh2_ = getMean(voltOutCh2_p);
@@ -292,7 +272,6 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
       for(Int_t peakIter = 0; peakIter < maxNPeaks; peakIter++){
 	Int_t startPos = 0;
 	if(nPeakCh2_ != 0) startPos = peakEndCh2_[peakIter-1];
-
 
 	findPeak(voltOutCh2_p, meanCh2_, startPos, (Int_t)(voltOutCh2_p->size()), peakStartCh2_[peakIter], peakEndCh2_[peakIter]);
 	if(peakStartCh2_[peakIter] == -1) break;
@@ -308,7 +287,7 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
 	if(nPeakCh2_ != maxNPeaks-1) endPos = peakStartCh2_[peakIter+1];
 	
 	refinePeak(voltOutCh2_p, meanCutCh2_, startPos, endPos, peakStartCh2_[peakIter], peakEndCh2_[peakIter]);
-      peakSumCh2_[peakIter] = getPeakSum(voltOutCh2_p, peakStartCh2_[peakIter], peakEndCh2_[peakIter]);
+	peakSumCh2_[peakIter] = getPeakSum(voltOutCh2_p, peakStartCh2_[peakIter], peakEndCh2_[peakIter]);
       }
     }
 
