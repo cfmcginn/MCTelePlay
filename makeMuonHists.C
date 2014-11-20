@@ -31,7 +31,7 @@ int makeMuonHists(const std::string inName, Bool_t isCh2 = false)
   for(Int_t iter = 0; iter < nentries; iter++){
     muonTree_p->GetEntry(iter);
 
-    if(nPeakCh1_ > 1){
+    if(nPeakCh1_ == 2){
       for(Int_t peakIter = 1; peakIter < nPeakCh1_; peakIter++){
 	peakSumCh1_p[peakIter]->Fill(TMath::Abs(peakSumCh1_[peakIter]));
 	peakStartCh1_p[peakIter]->Fill(timeStamp_[peakStartCh1_[peakIter]]*TMath::Power(10, 6));
@@ -40,7 +40,7 @@ int makeMuonHists(const std::string inName, Bool_t isCh2 = false)
       }
     }
 
-    if(isCh2 && nPeakCh2_ > 1){
+    if(isCh2 && nPeakCh2_ == 2){
       for(Int_t peakIter = 1; peakIter < nPeakCh1_; peakIter++){
 	peakSumCh2_p[peakIter]->Fill(TMath::Abs(peakSumCh2_[peakIter]));
 	peakStartCh2_p[peakIter]->Fill(timeStamp_[peakStartCh2_[peakIter]]*TMath::Power(10, 6));
@@ -55,7 +55,7 @@ int makeMuonHists(const std::string inName, Bool_t isCh2 = false)
 
   TFile* outFile_p = new TFile(outName.c_str(), "UPDATE");
 
-  for(Int_t iter = 0; iter < nPeaks; iter++){
+  for(Int_t iter = 0; iter < nHistPeaks; iter++){
     peakSumCh1_p[iter]->Write("", TObject::kOverwrite);
     peakStartCh1_p[iter]->Write("", TObject::kOverwrite);
     peakEndCh1_p[iter]->Write("", TObject::kOverwrite);
@@ -72,7 +72,7 @@ int makeMuonHists(const std::string inName, Bool_t isCh2 = false)
   outFile_p->Close();
   delete outFile_p;
 
-  CleanupHists();
+  CleanupHists(isCh2);
 
   CleanupMuonTree();
   inFile_p->Close();

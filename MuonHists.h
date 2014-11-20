@@ -15,8 +15,8 @@
 #include "TMath.h"
 #include "TCanvas.h"
 
-const Int_t nHistPeaks = 2;
-const std::string peakStr[nHistPeaks] = {"Uncut", "Cut"};
+const Int_t nHistPeaks = 1;
+const std::string peakStr[nHistPeaks] = {"Cut"};
 
 TH1F* peakSumCh1_p[nHistPeaks];
 TH1F* peakSumCh2_p[nHistPeaks];

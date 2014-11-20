@@ -15,7 +15,7 @@
 #include <fstream>
 #include <iostream>
 
-const Int_t nHeaderLines = 22;
+const Int_t nHeaderLines = 50;
 
 Float_t getMean(std::vector<Float_t>* inVect_p)
 {
@@ -158,11 +158,11 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
   }
 
   std::cout << "FileList Loaded" << std::endl;
-
+  /*
   for(Int_t fileIter = 0; fileIter < (Int_t)(listOfFiles.size()); fileIter++){
     std::cout << listOfFiles[fileIter] << std::endl;
   }
-
+  */
   //  setFileTag(inName);
 
   std::string outName = listOfFiles[0];
@@ -232,7 +232,6 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
 	if(iter%2 == 0) timeStamp_p->push_back(std::stof(outVal));
 	if(iter%2 == 1) voltOutCh1_p->push_back(std::stof(outVal));
       }
-
       iter++;
     }
 
@@ -252,6 +251,17 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
       findPeak(voltOutCh1_p, meanCh1_, startPos, (Int_t)(voltOutCh1_p->size()), peakStartCh1_[peakIter], peakEndCh1_[peakIter]);
       if(peakStartCh1_[peakIter] == -1) break;
       nPeakCh1_++;
+    }
+
+    if(nPeakCh1_ < 2){
+      timeStamp_p->clear();
+      voltOutCh1_p->clear();
+      voltOutCh2_p->clear();
+      delete timeStamp_p;
+      delete voltOutCh1_p;
+      delete voltOutCh2_p;
+
+      continue;
     }
 
     meanCutCh1_ = getCutMean(*voltOutCh1_p, nPeakCh1_, peakStartCh1_, peakEndCh1_);
