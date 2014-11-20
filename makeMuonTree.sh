@@ -6,6 +6,7 @@ then
   exit 1
 fi
 
+echo $2
 echo | awk -v inputList=$1 -v isCh2=$2 '{print "./makeMuonTree.exe \""inputList"\" \""isCh2"\""}' | bash
 
 mv *MuonTree*.root $3
