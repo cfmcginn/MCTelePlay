@@ -190,7 +190,7 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
   InitMuonTree(isCh2);
 
   for(Int_t fileIter = 0; fileIter < (Int_t)(listOfFiles.size()); fileIter++){
-    std::cout << "Event Number: " <<  fileIter << std::endl;
+    if(fileIter%100 == 0) std::cout << "Event Number: " <<  fileIter << std::endl;
     InitMuonVar(isCh2);
 
     std::ifstream csvFile(listOfFiles[fileIter].c_str());
