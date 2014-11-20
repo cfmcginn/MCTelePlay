@@ -61,6 +61,7 @@ void findPeak(std::vector<Float_t>* inVect_p, Float_t mean, Int_t startPos, Int_
   peakStart = -1;
   peakEnd = -1;
   const Int_t peakWidth = 10;
+  endPos = endPos - peakWidth;
 
   for(Int_t i = startPos; i < endPos; i++){
     Bool_t peakBool = true;
@@ -79,8 +80,8 @@ void findPeak(std::vector<Float_t>* inVect_p, Float_t mean, Int_t startPos, Int_
   if(peakStart == -1) return;
 
   for(Int_t i = peakStart; i < endPos; i++){
-    if(i == endPos - 1 - peakWidth){
-      peakEnd = endPos;
+    if(i == endPos - 1){
+      peakEnd = endPos+peakWidth;
       break;
     }
 
@@ -248,7 +249,7 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
       Int_t startPos = 0;
       if(nPeakCh1_ != 0) startPos = peakEndCh1_[peakIter-1];
 
-      findPeak(voltOutCh1_p, meanCh1_-0.1, startPos, (Int_t)(voltOutCh1_p->size()), peakStartCh1_[peakIter], peakEndCh1_[peakIter]);
+      findPeak(voltOutCh1_p, meanCh1_, startPos, (Int_t)(voltOutCh1_p->size()), peakStartCh1_[peakIter], peakEndCh1_[peakIter]);
       if(peakStartCh1_[peakIter] == -1) break;
       nPeakCh1_++;
     }
