@@ -133,7 +133,7 @@ Float_t getPeakSum(std::vector<Float_t>* inVect_p, const Int_t peakStart, const 
 }
 
 
-int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
+int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
 {
   std::string buffer;
   std::vector<std::string> listOfFiles;
@@ -166,8 +166,8 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
 
   std::string outName = listOfFiles[0];
   const std::string cullString = "/";
-  const std::string cutString = ".csv";
-  const std::string repString = "";
+  const std::string cutString[2] = {".csv", ".lvm"};
+  const std::string repString[2] = {"", ""};
 
   std::cout << "Cull string" << std::endl;
   while(true){
@@ -176,10 +176,12 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
     outName.replace(0, strIndex + 1, "");
   }
 
-  std::cout << "Replace string" << std::endl;
-  std::size_t strIndex = outName.find(cutString);
-  if(!(strIndex == std::string::npos)){
-    outName.replace(strIndex, cutString.length(), repString);
+  for(Int_t iter = 0; iter < 2; iter++){
+    std::cout << "Replace string" << std::endl;
+    std::size_t strIndex = outName.find(cutString[iter]);
+    if(!(strIndex == std::string::npos)){
+      outName.replace(strIndex, cutString[iter].length(), repString[iter]);
+    }
   }
 
   std::cout << outName << std::endl;
@@ -189,6 +191,7 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
 
   for(Int_t fileIter = 0; fileIter < (Int_t)(listOfFiles.size()); fileIter++){
     std::cout << "Event Number: " <<  fileIter << std::endl;
+    std::cout << "isCh2: " << isCh2 << std::endl;
     InitMuonVar(isCh2);
 
     std::ifstream csvFile(listOfFiles[fileIter].c_str());
@@ -217,8 +220,12 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
 	}
       }
       else{
+	std::cout << "A: " << iter << std::endl;
+
         if(iter%2!=1) std::getline(csvFile, outVal, ',');
         else std::getline(csvFile, outVal);
+
+	std::cout << "B: " << iter << std::endl;
 
         if(csvFile.eof()) break;
 
@@ -235,14 +242,21 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
       iter++;
     }
 
-    Int_t nentries = (Float_t)(voltOutCh1_p->size());
+    std::cout << "Here" << std::endl;
+
+    Int_t nentries = (Int_t)(voltOutCh1_p->size());
+    std::cout << timeStamp_p->size() << std::endl;
+    std::cout << nentries << std::endl;
+    std::cout << voltOutCh2_p->size();
+    std::cout << isCh2 << std::endl;
     for(Int_t j = 0; j < nentries; j++){
-      //    std::cout << j << ": " << voltOutCh1_p->at(j) << ", " << voltOutCh2_p->at(j) << std::endl;
+      if(j > 2400) std::cout << j <<std::endl;
       timeStamp_[j] = timeStamp_p->at(j);
       voltCh1_[j] = voltOutCh1_p->at(j);
       if(isCh2) voltCh2_[j] = voltOutCh2_p->at(j);
     }
 
+    std::cout << "A" << std::endl;
     meanCh1_ = getMean(voltOutCh1_p);
 
     for(Int_t peakIter = 0; peakIter < maxNPeaks; peakIter++){
@@ -253,6 +267,8 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
       if(peakStartCh1_[peakIter] == -1) break;
       nPeakCh1_++;
     }
+
+    std::cout << "B" << std::endl;
 
     meanCutCh1_ = getCutMean(*voltOutCh1_p, nPeakCh1_, peakStartCh1_, peakEndCh1_);
 
@@ -265,6 +281,8 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
       refinePeak(voltOutCh1_p, meanCutCh1_, startPos, endPos, peakStartCh1_[peakIter], peakEndCh1_[peakIter]);
       peakSumCh1_[peakIter] = getPeakSum(voltOutCh1_p, peakStartCh1_[peakIter], peakEndCh1_[peakIter]);
     }
+    std::cout << "C" << std::endl;
+    std::cout << isCh2 << std::endl;
 
     if(isCh2){
       meanCh2_ = getMean(voltOutCh2_p);
@@ -291,7 +309,11 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
       }
     }
 
+    std::cout << "D" << std::endl;
+
     muonTree_p->Fill();
+
+    std::cout << "E" << std::endl;
 
     timeStamp_p->clear();
     voltOutCh1_p->clear();
@@ -299,6 +321,8 @@ int makeMuonTree(const std::string fList = "", Bool_t isCh2 = false)
     delete timeStamp_p;
     delete voltOutCh1_p;
     delete voltOutCh2_p;
+
+    std::cout << "F" << std::endl;
   }
 
   muonTree_p->Write("", TObject::kOverwrite);
@@ -320,7 +344,9 @@ int main(int argc, char* argv[])
 
   int rStatus = -1;
 
-  rStatus = makeMuonTree(argv[1], (Bool_t)argv[2]);
+  std::cout << "NUM BEFORE: " << argv[2] << std::endl;
+  std::cout << "BOOL BEFORE: " << (Bool_t)(std::atoi(argv[2])) << std::endl;
+  rStatus = makeMuonTree(argv[1], (Bool_t)(std::atoi(argv[2])));
 
   return rStatus;
 }
