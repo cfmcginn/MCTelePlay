@@ -15,7 +15,7 @@
 #include <fstream>
 #include <iostream>
 
-const Int_t nHeaderLines = 50;
+const Int_t nHeaderLines = 200;
 
 Float_t getMean(std::vector<Float_t>* inVect_p)
 {
@@ -38,10 +38,10 @@ Float_t getMedian(std::vector<Float_t> inVect)
 }
 
 
-Float_t getCutMean(std::vector<Float_t> inVect, Int_t nCut, Int_t startCut[], Int_t stopCut[])
+Float_t getCutMean(std::vector<Float_t> inVect, Int_t nCut, Int_t startCut[][nPeakSums], Int_t stopCut[][nPeakSums])
 {
   for(Int_t iter = nCut-1; iter >= 0; iter--){
-    inVect.erase(inVect.begin() + startCut[iter], inVect.begin() + stopCut[iter]);
+    inVect.erase(inVect.begin() + startCut[iter][0], inVect.begin() + stopCut[iter][0]);
   }
 
   return getMean(&inVect);
@@ -165,10 +165,10 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
   */
   //  setFileTag(inName);
 
-  std::string outName = listOfFiles[0];
+  std::string outName = fList;
   const std::string cullString = "/";
-  const std::string cutString[2] = {".csv", ".lvm"};
-  const std::string repString[2] = {"", ""};
+  const std::string cutString[3] = {".csv", ".lvm", ".txt"};
+  const std::string repString[3] = {"", "", ""};
 
   std::cout << "Cull string" << std::endl;
   while(true){
@@ -177,7 +177,7 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
     outName.replace(0, strIndex + 1, "");
   }
 
-  for(Int_t iter = 0; iter < 2; iter++){
+  for(Int_t iter = 0; iter < 3; iter++){
     std::cout << "Replace string" << std::endl;
     std::size_t strIndex = outName.find(cutString[iter]);
     if(!(strIndex == std::string::npos)){
@@ -246,10 +246,13 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
 
     for(Int_t peakIter = 0; peakIter < maxNPeaks; peakIter++){
       Int_t startPos = 0;
-      if(nPeakCh1_ != 0) startPos = peakEndCh1_[peakIter-1];
+      if(nPeakCh1_ != 0) startPos = peakEndCh1_[peakIter-1][0];
 
-      findPeak(voltOutCh1_p, meanCh1_, startPos, (Int_t)(voltOutCh1_p->size()), peakStartCh1_[peakIter], peakEndCh1_[peakIter]);
-      if(peakStartCh1_[peakIter] == -1) break;
+      findPeak(voltOutCh1_p, meanCh1_, startPos, (Int_t)(voltOutCh1_p->size()), peakStartCh1_[peakIter][0], peakEndCh1_[peakIter][0]);
+      if(peakStartCh1_[peakIter][0] == -1) break;
+
+      peakStartCh1_[peakIter][1] = peakStartCh1_[peakIter][0];
+      peakEndCh1_[peakIter][1] = peakEndCh1_[peakIter][0];
       nPeakCh1_++;
     }
 
@@ -268,12 +271,17 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
 
     for(Int_t peakIter = 0; peakIter < nPeakCh1_; peakIter++){
       Int_t startPos = 0;
-      if(peakIter != 0) startPos = peakEndCh1_[peakIter-1];
+      if(peakIter != 0) startPos = peakEndCh1_[peakIter-1][1];
       Int_t endPos = voltOutCh1_p->size();
-      if(peakIter != nPeakCh1_-1) endPos = peakStartCh1_[peakIter+1];
+      if(peakIter != nPeakCh1_-1) endPos = peakStartCh1_[peakIter+1][1];
 
-      refinePeak(voltOutCh1_p, meanCutCh1_, startPos, endPos, peakStartCh1_[peakIter], peakEndCh1_[peakIter]);
-      peakSumCh1_[peakIter] = getPeakSum(voltOutCh1_p, peakStartCh1_[peakIter], peakEndCh1_[peakIter]);
+      refinePeak(voltOutCh1_p, meanCutCh1_, startPos, endPos, peakStartCh1_[peakIter][1], peakEndCh1_[peakIter][1]);
+
+      for(Int_t sumIter = 0; sumIter < nPeakSums; sumIter++){
+	peakSumCh1_[peakIter][sumIter] = getPeakSum(voltOutCh1_p, peakStartCh1_[peakIter][sumIter], peakEndCh1_[peakIter][sumIter]);
+	peakStartTimeCh1_[peakIter][sumIter] = timeStamp_[peakStartCh1_[peakIter][sumIter]];
+	peakEndTimeCh1_[peakIter][sumIter] = timeStamp_[peakEndCh1_[peakIter][sumIter]];
+      }
     }
 
     if(isCh2){
@@ -281,10 +289,13 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
 
       for(Int_t peakIter = 0; peakIter < maxNPeaks; peakIter++){
 	Int_t startPos = 0;
-	if(nPeakCh2_ != 0) startPos = peakEndCh2_[peakIter-1];
+	if(nPeakCh2_ != 0) startPos = peakEndCh2_[peakIter-1][0];
 
-	findPeak(voltOutCh2_p, meanCh2_, startPos, (Int_t)(voltOutCh2_p->size()), peakStartCh2_[peakIter], peakEndCh2_[peakIter]);
-	if(peakStartCh2_[peakIter] == -1) break;
+	findPeak(voltOutCh2_p, meanCh2_, startPos, (Int_t)(voltOutCh2_p->size()), peakStartCh2_[peakIter][0], peakEndCh2_[peakIter][0]);
+	if(peakStartCh2_[peakIter][0] == -1) break;
+
+	peakStartCh2_[peakIter][1] = peakStartCh2_[peakIter][0];
+	peakEndCh2_[peakIter][1] = peakEndCh2_[peakIter][0];
 	nPeakCh2_++;
       }      
 
@@ -292,12 +303,17 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
 
       for(Int_t peakIter = 0; peakIter < nPeakCh2_; peakIter++){
 	Int_t startPos = 0;
-	if(nPeakCh2_ != 0) startPos = peakEndCh2_[peakIter-1];
+	if(nPeakCh2_ != 0) startPos = peakEndCh2_[peakIter-1][1];
 	Int_t endPos = voltOutCh2_p->size();
-	if(nPeakCh2_ != maxNPeaks-1) endPos = peakStartCh2_[peakIter+1];
+	if(nPeakCh2_ != maxNPeaks-1) endPos = peakStartCh2_[peakIter+1][1];
 	
-	refinePeak(voltOutCh2_p, meanCutCh2_, startPos, endPos, peakStartCh2_[peakIter], peakEndCh2_[peakIter]);
-	peakSumCh2_[peakIter] = getPeakSum(voltOutCh2_p, peakStartCh2_[peakIter], peakEndCh2_[peakIter]);
+	refinePeak(voltOutCh2_p, meanCutCh2_, startPos, endPos, peakStartCh2_[peakIter][1], peakEndCh2_[peakIter][1]);
+
+	for(Int_t sumIter = 0; sumIter < nPeakSums; sumIter++){
+	  peakSumCh2_[peakIter][sumIter] = getPeakSum(voltOutCh2_p, peakStartCh2_[peakIter][sumIter], peakEndCh2_[peakIter][sumIter]);
+	  peakStartTimeCh2_[peakIter][sumIter] = timeStamp_[peakStartCh2_[peakIter][sumIter]];
+	  peakEndTimeCh2_[peakIter][sumIter] = timeStamp_[peakEndCh2_[peakIter][sumIter]];
+	}
       }
     }
 
