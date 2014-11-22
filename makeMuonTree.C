@@ -251,8 +251,11 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
       findPeak(voltOutCh1_p, meanCh1_[0], startPos, (Int_t)(voltOutCh1_p->size()), peakStartCh1_[peakIter][0], peakEndCh1_[peakIter][0]);
       if(peakStartCh1_[peakIter][0] == -1) break;
 
-      peakStartCh1_[peakIter][1] = peakStartCh1_[peakIter][0];
-      peakEndCh1_[peakIter][1] = peakEndCh1_[peakIter][0];
+      for(Int_t sumIter = 1; sumIter < nPeakSums; sumIter++){
+	peakStartCh1_[peakIter][sumIter] = peakStartCh1_[peakIter][0];
+	peakEndCh1_[peakIter][sumIter] = peakEndCh1_[peakIter][0];
+      }
+
       nPeakCh1_++;
     }
 
@@ -296,8 +299,10 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
 	findPeak(voltOutCh2_p, meanCh2_[0], startPos, (Int_t)(voltOutCh2_p->size()), peakStartCh2_[peakIter][0], peakEndCh2_[peakIter][0]);
 	if(peakStartCh2_[peakIter][0] == -1) break;
 
-	peakStartCh2_[peakIter][1] = peakStartCh2_[peakIter][0];
-	peakEndCh2_[peakIter][1] = peakEndCh2_[peakIter][0];
+	for(Int_t sumIter = 1; sumIter < nPeakSums; sumIter++){
+	  peakStartCh2_[peakIter][sumIter] = peakStartCh2_[peakIter][0];
+	  peakEndCh2_[peakIter][sumIter] = peakEndCh2_[peakIter][0];
+	}
 	nPeakCh2_++;
       }      
 

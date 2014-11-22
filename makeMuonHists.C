@@ -11,6 +11,8 @@
 #include "TMath.h"
 
 
+const Float_t sumCut = 15;
+
 int makeMuonHists(const std::string inName, Bool_t isCh2 = false)
 {
   TH1::SetDefaultSumw2();
@@ -31,21 +33,22 @@ int makeMuonHists(const std::string inName, Bool_t isCh2 = false)
   for(Int_t iter = 0; iter < nentries; iter++){
     muonTree_p->GetEntry(iter);
 
-    if(nPeakCh1_ == 2){
-      for(Int_t peakIter = 1; peakIter < nPeakCh1_; peakIter++){
-	peakSumCh1_p[peakIter]->Fill(TMath::Abs(peakSumCh1_[peakIter]));
-	peakStartCh1_p[peakIter]->Fill(timeStamp_[peakStartCh1_[peakIter]]*TMath::Power(10, 6));
-	peakEndCh1_p[peakIter]->Fill(timeStamp_[peakEndCh1_[peakIter]]*TMath::Power(10, 6));
-	peakWidthCh1_p[peakIter]->Fill((timeStamp_[peakEndCh1_[peakIter]] - timeStamp_[peakStartCh1_[peakIter]])*TMath::Power(10, 6));
-      }
-    }
+    if(nPeakCh1_ > 1){
+      for(Int_t sumIter = 0; sumIter < nPeakSums; sumIter++){
+	
+	Float_t sumTot = peakSumCh1_[1][sumIter];
+	for(Int_t peakIter = 2; peakIter < nPeakCh1_; peakIter++){
+	  if(peakStartTimeCh1_[peakIter][sumIter] - peakEndTimeCh1_[1][sumIter] < .000001) sumTot += peakSumCh1_[peakIter][sumIter];
+	}
 
-    if(isCh2 && nPeakCh2_ == 2){
-      for(Int_t peakIter = 1; peakIter < nPeakCh1_; peakIter++){
-	peakSumCh2_p[peakIter]->Fill(TMath::Abs(peakSumCh2_[peakIter]));
-	peakStartCh2_p[peakIter]->Fill(timeStamp_[peakStartCh2_[peakIter]]*TMath::Power(10, 6));
-	peakEndCh2_p[peakIter]->Fill(timeStamp_[peakEndCh2_[peakIter]]*TMath::Power(10, 6));
-	peakWidthCh2_p[peakIter]->Fill((timeStamp_[peakEndCh2_[peakIter]] - timeStamp_[peakStartCh2_[peakIter]])*TMath::Power(10, 6));
+	sumTot = TMath::Abs(sumTot);
+	if(sumTot < sumCut) continue;
+
+        peakSumCh1_p[sumIter]->Fill(sumTot);
+        peakStartCh1_p[sumIter]->Fill((peakStartTimeCh1_[1][sumIter])*TMath::Power(10, 6));
+	peakEndCh1_p[sumIter]->Fill((peakEndTimeCh1_[1][sumIter])*TMath::Power(10, 6));
+        peakWidthCh1_p[sumIter]->Fill((peakEndTimeCh1_[1][sumIter] - peakStartTimeCh1_[1][sumIter])*TMath::Power(10,6));
+	decayTimeCh1_p[sumIter]->Fill((peakStartTimeCh1_[1][sumIter] - peakStartTimeCh1_[0][sumIter])*TMath::Power(10,6));
       }
     }
 
@@ -60,13 +63,7 @@ int makeMuonHists(const std::string inName, Bool_t isCh2 = false)
     peakStartCh1_p[iter]->Write("", TObject::kOverwrite);
     peakEndCh1_p[iter]->Write("", TObject::kOverwrite);
     peakWidthCh1_p[iter]->Write("", TObject::kOverwrite);
-
-    if(isCh2){
-      peakSumCh2_p[iter]->Write("", TObject::kOverwrite);
-      peakStartCh2_p[iter]->Write("", TObject::kOverwrite);
-      peakEndCh2_p[iter]->Write("", TObject::kOverwrite);
-      peakWidthCh2_p[iter]->Write("", TObject::kOverwrite);
-    }
+    decayTimeCh1_p[iter]->Write("", TObject::kOverwrite);
   }
 
   outFile_p->Close();
