@@ -25,11 +25,10 @@ Float_t voltCh1_[maxNSteps];
 Float_t voltCh2_[maxNSteps];
 
 const Int_t maxNPeaks = 4;
-const Int_t nPeakSums = 2;
+const Int_t nPeakSums = 3;
 
 Int_t nPeakCh1_;
-Float_t meanCh1_;
-Float_t meanCutCh1_;
+Float_t meanCh1_[nPeakSums];
 Int_t peakStartCh1_[maxNPeaks][nPeakSums];
 Float_t peakStartTimeCh1_[maxNPeaks][nPeakSums];
 Int_t peakEndCh1_[maxNPeaks][nPeakSums];
@@ -37,8 +36,7 @@ Float_t peakEndTimeCh1_[maxNPeaks][nPeakSums];
 Float_t peakSumCh1_[maxNPeaks][nPeakSums];
 
 Int_t nPeakCh2_;
-Float_t meanCh2_;
-Float_t meanCutCh2_;
+Float_t meanCh2_[nPeakSums];
 Int_t peakStartCh2_[maxNPeaks][nPeakSums];
 Float_t peakStartTimeCh2_[maxNPeaks][nPeakSums];
 Int_t peakEndCh2_[maxNPeaks][nPeakSums];
@@ -52,8 +50,7 @@ void SetMuonBranches(Bool_t isCh2)
   if(isCh2) muonTree_p->Branch("voltCh2", voltCh2_, Form("voltCh2[%d]/F", maxNSteps));
 
   muonTree_p->Branch("nPeakCh1", &nPeakCh1_, "nPeakCh1/I");
-  muonTree_p->Branch("meanCh1", &meanCh1_, Form("meanCh1/F"));
-  muonTree_p->Branch("meanCutCh1", &meanCutCh1_, Form("meanCutCh1/F"));
+  muonTree_p->Branch("meanCh1", &meanCh1_, Form("meanCh1[%d]/F", nPeakSums));
   muonTree_p->Branch("peakStartCh1", peakStartCh1_, Form("peakStartCh1[nPeakCh1][%d]/I", nPeakSums));
   muonTree_p->Branch("peakStartTimeCh1", peakStartTimeCh1_, Form("peakStartTimeCh1[nPeakCh1][%d]/F", nPeakSums));
   muonTree_p->Branch("peakEndCh1", peakEndCh1_, Form("peakEndCh1[nPeakCh1][%d]/I", nPeakSums));
@@ -62,8 +59,7 @@ void SetMuonBranches(Bool_t isCh2)
 
   if(isCh2){
     muonTree_p->Branch("nPeakCh2", &nPeakCh2_, "nPeakCh2/I");
-    muonTree_p->Branch("meanCh2", &meanCh2_, Form("meanCh2/F"));
-    muonTree_p->Branch("meanCutCh2", &meanCutCh2_, Form("meanCutCh2/F"));
+    muonTree_p->Branch("meanCh2", &meanCh2_, Form("meanCh2[%d]/F", nPeakSums));
     muonTree_p->Branch("peakStartCh2", peakStartCh2_, Form("peakStartCh2[nPeakCh2][%d]/I", nPeakSums));
     muonTree_p->Branch("peakStartTimeCh2", peakStartTimeCh2_, Form("peakStartTimeCh2[nPeakCh2][%d]/F", nPeakSums));
     muonTree_p->Branch("peakEndCh2", peakEndCh2_, Form("peakEndCh2[nPeakCh2][%d]/I", nPeakSums));
@@ -82,8 +78,7 @@ void GetMuonBranches(Bool_t isCh2)
   if(isCh2) muonTree_p->SetBranchAddress("voltCh2", voltCh2_);
 
   muonTree_p->SetBranchAddress("nPeakCh1", &nPeakCh1_);
-  muonTree_p->SetBranchAddress("meanCh1", &meanCh1_);
-  muonTree_p->SetBranchAddress("meanCutCh1", &meanCutCh1_);
+  muonTree_p->SetBranchAddress("meanCh1", meanCh1_);
   muonTree_p->SetBranchAddress("peakStartCh1", peakStartCh1_);
   muonTree_p->SetBranchAddress("peakStartTimeCh1", peakStartTimeCh1_);
   muonTree_p->SetBranchAddress("peakEndCh1", peakEndCh1_);
@@ -92,8 +87,7 @@ void GetMuonBranches(Bool_t isCh2)
 
   if(isCh2){
     muonTree_p->SetBranchAddress("nPeakCh2", &nPeakCh2_);
-    muonTree_p->SetBranchAddress("meanCh2", &meanCh2_);
-    muonTree_p->SetBranchAddress("meanCutCh2", &meanCutCh2_);
+    muonTree_p->SetBranchAddress("meanCh2", meanCh2_);
     muonTree_p->SetBranchAddress("peakStartCh2", peakStartCh2_);
     muonTree_p->SetBranchAddress("peakStartTimeCh2", peakStartTimeCh2_);
     muonTree_p->SetBranchAddress("peakEndCh2", peakEndCh2_);
@@ -138,13 +132,11 @@ void GetMuonTree(TFile* muonFile_p, Bool_t isCh2)
 void InitMuonVar(Bool_t isCh2)
 {
   nPeakCh1_ = 0;
-  meanCh1_ = 0;
-  meanCutCh1_ = 0;
+  if(isCh2) nPeakCh2_ = 0;
 
-  if(isCh2){
-    nPeakCh2_ = 0;
-    meanCh2_ = 0;
-    meanCutCh2_ = 0;
+  for(Int_t iter = 0; iter < nPeakSums; iter++){
+    meanCh1_[iter] = 0;
+    meanCh2_[iter] = 0;
   }
 
   for(Int_t iter = 0; iter < maxNPeaks; iter++){
