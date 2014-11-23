@@ -19,6 +19,16 @@ void drawMeanLine(TH1* inHist_p, Int_t lineStyle = 2, Int_t lineColor = 1)
 }
 
 
+void fitExpo(TH1* inHist_p)
+{
+  Float_t bound = inHist_p->GetBinCenter(inHist_p->GetMaximumBin());
+  std::cout << bound << std::endl;
+  inHist_p->Fit("expo", "ML", "", bound, 10);
+
+  return;
+}
+
+
 void make3Plot(const std::string outName, const std::string plotName, const std::string title, TH1* hist1_p, const std::string label1, TH1* hist2_p, const std::string label2, TH1* hist3_p, const std::string label3)
 {
   ThreeFormat(hist1_p, hist2_p, hist3_p);
@@ -35,17 +45,20 @@ void make3Plot(const std::string outName, const std::string plotName, const std:
   label_p->DrawLatex(0.3, 0.9, Form("%s", title.c_str()));
   label_p->DrawLatex(0.7, 0.8, Form("%s", label1.c_str()));
   if(strcmp("voltSumCh1", plotName.c_str()) == 0) drawMeanLine(hist1_p);
+  if(strcmp("decayTimeCh1", plotName.c_str()) == 0) fitExpo(hist1_p);
 
   plotPanel_p->cd(2);
   hist2_p->GetXaxis()->SetTitleOffset(1.00);
   hist2_p->DrawCopy("E1");
   label_p->DrawLatex(0.60, 0.8, Form("%s", label2.c_str()));
   if(strcmp("voltSumCh1", plotName.c_str()) == 0) drawMeanLine(hist2_p);
+  if(strcmp("decayTimeCh1", plotName.c_str()) == 0) fitExpo(hist2_p);
 
   plotPanel_p->cd(3);
   hist3_p->GetXaxis()->SetTitleOffset(1.00);
   hist3_p->DrawCopy("E1");
   label_p->DrawLatex(0.60, 0.8, Form("%s", label3.c_str()));
+  if(strcmp("decayTimeCh1", plotName.c_str()) == 0) fitExpo(hist3_p);
   if(strcmp("voltSumCh1", plotName.c_str()) == 0) drawMeanLine(hist3_p);
 
   TFile* outFile_p = new TFile(outName.c_str(), "UPDATE");
