@@ -240,6 +240,7 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
       timeStamp_[j] = timeStamp_p->at(j);
       voltCh1_[j] = voltOutCh1_p->at(j);
       if(isCh2) voltCh2_[j] = voltOutCh2_p->at(j);
+      nCh_++;
     }
 
     meanCh1_[0] = getMean(voltOutCh1_p);
@@ -259,16 +260,7 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
       nPeakCh1_++;
     }
 
-    if(nPeakCh1_ < 2){
-      timeStamp_p->clear();
-      voltOutCh1_p->clear();
-      voltOutCh2_p->clear();
-      delete timeStamp_p;
-      delete voltOutCh1_p;
-      delete voltOutCh2_p;
-
-      continue;
-    }
+    if(nPeakCh1_ < 2) nCh_ = 0;
 
     meanCh1_[2] = getCutMean(*voltOutCh1_p, nPeakCh1_, peakStartCh1_, peakEndCh1_);
     meanCh1_[1] = (meanCh1_[2] + meanCh1_[0])/2.0;

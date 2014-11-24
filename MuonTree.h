@@ -20,6 +20,8 @@ Float_t decayTime_;
 Float_t gammaE_;
 
 const Int_t maxNSteps = 2500;
+
+Int_t nCh_;
 Float_t timeStamp_[maxNSteps];
 Float_t voltCh1_[maxNSteps];
 Float_t voltCh2_[maxNSteps];
@@ -45,9 +47,11 @@ Float_t peakSumCh2_[maxNPeaks][nPeakSums];
 
 void SetMuonBranches(Bool_t isCh2)
 {
-  muonTree_p->Branch("timeStamp", timeStamp_, Form("timeStamp[%d]/F", maxNSteps));
-  muonTree_p->Branch("voltCh1", voltCh1_, Form("voltCh1[%d]/F", maxNSteps));
-  if(isCh2) muonTree_p->Branch("voltCh2", voltCh2_, Form("voltCh2[%d]/F", maxNSteps));
+
+  muonTree_p->Branch("nCh", &nCh_, "nCh/I");
+  muonTree_p->Branch("timeStamp", timeStamp_, Form("timeStamp[nCh]/F"));
+  muonTree_p->Branch("voltCh1", voltCh1_, Form("voltCh1[nCh]/F"));
+  if(isCh2) muonTree_p->Branch("voltCh2", voltCh2_, Form("voltCh2[nCh]/F"));
 
   muonTree_p->Branch("nPeakCh1", &nPeakCh1_, "nPeakCh1/I");
   muonTree_p->Branch("meanCh1", &meanCh1_, Form("meanCh1[%d]/F", nPeakSums));
@@ -73,6 +77,7 @@ void SetMuonBranches(Bool_t isCh2)
 
 void GetMuonBranches(Bool_t isCh2)
 {
+  muonTree_p->SetBranchAddress("nCh", &nCh_);
   muonTree_p->SetBranchAddress("timeStamp", timeStamp_);
   muonTree_p->SetBranchAddress("voltCh1", voltCh1_);
   if(isCh2) muonTree_p->SetBranchAddress("voltCh2", voltCh2_);
@@ -131,6 +136,8 @@ void GetMuonTree(TFile* muonFile_p, Bool_t isCh2)
 
 void InitMuonVar(Bool_t isCh2)
 {
+  nCh_ = 0;
+
   nPeakCh1_ = 0;
   if(isCh2) nPeakCh2_ = 0;
 
