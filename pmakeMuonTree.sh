@@ -14,7 +14,9 @@ cp makeMuonTree.sh $now
 cp $1 $now
 
 NAME="makeMuonTree.C"
+echo "1"
 g++ -std=c++11  $NAME $(root-config --cflags --libs) -Werror -Wall -O2 -o "${NAME/%.C/}.exe" 
+echo "2"
 cp makeMuonTree.exe $now
 
 cat pmakeMuonTree.condor | sed "s@log_flag@$now@g" | sed "s@dir_flag@$PWD/$now@g" | sed "s@arg1@$1@g" | sed "s@arg2@$2@g" | sed "s@arg3@$3@g" | sed "s@njobs@$len@g" > $now/pmakeMuonTree.condor

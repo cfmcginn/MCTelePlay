@@ -10,6 +10,7 @@ echo $2
 echo | awk -v inputList=$1 -v isCh2=$2 '{print "./makeMuonTree.exe \""inputList"\" \""isCh2"\""}' | bash
 
 mv *MuonTree*.root $3
+mv *TwoPeak*.txt $3
 rm *.root 
 
 echo "job done successfully"
