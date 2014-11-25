@@ -45,7 +45,8 @@ class Muon
 		float yExit;
 		float zExit;
 
-		//exit distance from entering S1+S2 system assuming no decay
+		//distance traveled through scintillator only from entering S1+S2 to exit of system assuming no decay
+		float distanceSignal;
 		float distance;
 };
 
@@ -80,6 +81,7 @@ Muon::Muon()
 	xExit = -999;
 	yExit = -999;
 	zExit = -999;
+	distanceSignal = -999;
 	distance = -999;
 }
 
