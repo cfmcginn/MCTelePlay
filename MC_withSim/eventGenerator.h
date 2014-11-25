@@ -45,7 +45,7 @@ const float muonFlux = 0.007;
 const float muonAngularPower = 1.95;  //if you change this, you should probably change in integral in the main function too!
 
 //maximum electron energy allowed (in real life its half the mass of a muon ~52.85)
-const float electronMaxEnergy = 55.0;
+const float electronMaxEnergy = 105.65837/2.0;
 
 //dR step size used for calculating the electron energy loss (smaller dR leads to better calculation within reason, but also makes calculation longer) in cm
 const float dRstep = 0.01;
@@ -240,7 +240,7 @@ Muon getEvent(float time, bool SignalOnly)
 }
 
 
-Electron getElectron(float xDecay, float yDecay, float zDecay)
+Electron getElectron(float xDecay, float yDecay, float zDecay, int eSpectrum)
 {
 	Electron e;
 
@@ -252,7 +252,15 @@ Electron getElectron(float xDecay, float yDecay, float zDecay)
 	e.zOrigin = zDecay;
 
 	//energy is uniformly distributed for now (change this distribution to simulate real life if wanted)
-	e.energy = getRandom()*electronMaxEnergy;
+	if(eSpectrum == 1)
+	{
+		while(true)
+		{
+			e.energy = getRandom()*electronMaxEnergy;
+			if(getRandom()*8*electronMaxEnergy < (24*pow(e.energy,2)/electronMaxEnergy)*(1-2*e.energy/(3.0*electronMaxEnergy))) break;
+		}
+	}
+	else e.energy = getRandom()*electronMaxEnergy;
 
 	//calculation of electron trajectory and energy deposit; x,y,z,E are working variables for stepping through the trajectory
 	float x = e.xOrigin;
