@@ -118,6 +118,33 @@ void ThreeFormat(TH1* inHist1_p, TH1* inHist2_p, TH1* inHist3_p)
 }
 
 
+void FullThreeFormat(TH1* inHist1_p, TH1* inHist2_p, TH1* inHist3_p, Int_t startBin)
+{
+  Float_t maxVal = 0;
+  Float_t minVal = 0;
+  for(Int_t iter = startBin; iter < inHist1_p->GetNbinsX(); iter++){
+    if(inHist1_p->GetBinContent(iter+1) + inHist1_p->GetBinError(iter+1) > maxVal) maxVal = inHist1_p->GetBinContent(iter+1) + inHist1_p->GetBinError(iter+1);
+    if(inHist1_p->GetBinContent(iter+1) - inHist1_p->GetBinError(iter+1) < minVal) minVal = inHist1_p->GetBinContent(iter+1) - inHist1_p->GetBinError(iter+1);
+  }
+
+  for(Int_t iter = startBin; iter < inHist2_p->GetNbinsX(); iter++){
+    if(inHist2_p->GetBinContent(iter+1) + inHist2_p->GetBinError(iter+1) > maxVal) maxVal = inHist2_p->GetBinContent(iter+1) + inHist2_p->GetBinError(iter+1);
+    if(inHist2_p->GetBinContent(iter+1) - inHist2_p->GetBinError(iter+1) < minVal) minVal = inHist2_p->GetBinContent(iter+1) - inHist2_p->GetBinError(iter+1);
+  }
+
+  for(Int_t iter = startBin; iter < inHist3_p->GetNbinsX(); iter++){
+    if(inHist3_p->GetBinContent(iter+1) + inHist3_p->GetBinError(iter+1) > maxVal) maxVal = inHist3_p->GetBinContent(iter+1) + inHist3_p->GetBinError(iter+1);
+    if(inHist3_p->GetBinContent(iter+1) - inHist3_p->GetBinError(iter+1) < minVal) minVal = inHist3_p->GetBinContent(iter+1) - inHist3_p->GetBinError(iter+1);
+  }
+
+  niceTH1(inHist1_p, maxVal, minVal, 505, 505);
+  niceTH1(inHist2_p, maxVal, minVal, 505, 505);
+  niceTH1(inHist3_p, maxVal, minVal, 505, 505);
+
+  return;
+}
+
+
 void SetTitleHist(TH1* inHist_p, const std::string xTitle, const std::string yTitle)
 {
   inHist_p->SetXTitle(xTitle.c_str());
@@ -256,18 +283,19 @@ void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, const Int_t rows,
       canv->cd();
       padName = Form("p_%d_%d",i,j);
 
-      if(i==0 && j==1) pad[i][j] = new TPad(padName.Data(),padName.Data(),Xlow[i],Ylow[j],Xup[i]*0.890,Yup[j]*0.935);
+      //      if(i==0 && j==1) pad[i][j] = new TPad(padName.Data(),padName.Data(),Xlow[i],Ylow[j],Xup[i]*0.890,Yup[j]*0.935);
+      if(i==0 && j==1) pad[i][j] = new TPad(padName.Data(),padName.Data(),Xlow[i],Ylow[j]*0.934,Xup[i],Yup[j]*0.995);
       else if(i==0 && j==0) pad[i][j] = new TPad(padName.Data(),padName.Data(),Xlow[i],Ylow[j]*0.934,Xup[i],Yup[j]*.9985);
-      else if(i==1 && j==1) pad[i][j] = new TPad(padName.Data(),padName.Data(),0.80*Xlow[i],Ylow[j],Xup[i],Yup[j]*.995);
+      else if(i==1 && j==1) pad[i][j] = new TPad(padName.Data(),padName.Data(),Xlow[i],Ylow[j],Xup[i],Yup[j]*.995);
       else if(j == 0) pad[i][j] = new TPad(padName.Data(),padName.Data(),Xlow[i],Ylow[j],Xup[i],Yup[j]*.998);
       else pad[i][j] = new TPad(padName.Data(),padName.Data(),Xlow[i],Ylow[j],Xup[i],Yup[j]*.995);
 
       if(i==0){
         if(j == 0) pad[i][j]->SetLeftMargin(leftMargin*1.2);
-	else pad[i][j]->SetLeftMargin(leftMargin);
+	else pad[i][j]->SetLeftMargin(leftMargin*1.2);
       }
       else if(i==1 && j==1){
-	pad[i][j]->SetLeftMargin(PadWidth*.65);
+	pad[i][j]->SetLeftMargin(0);
       }
       else pad[i][j]->SetLeftMargin(0);
  
@@ -281,7 +309,7 @@ void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, const Int_t rows,
       else pad[i][j]->SetTopMargin(0);
 
       if(j==(rows-1)) pad[i][j]->SetBottomMargin(bottomMargin);
-      else if(i==0 && j==0) pad[i][j]->SetBottomMargin(0.17*PadHeight);
+      else if(i==0 && (j==0 || j == 1)) pad[i][j]->SetBottomMargin(0.17*PadHeight);
       else pad[i][j]->SetBottomMargin(0);
 
       pad[i][j]->Draw();
