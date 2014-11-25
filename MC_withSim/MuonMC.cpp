@@ -31,8 +31,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	getdEdx();
 
 	//output files
-	TFile *outf= new TFile("C:\\Users\\Austin\\Desktop\\SignalOnlyFinalData_10MEvents.root","recreate");
-	TNtuple * ntuple = new TNtuple("Data","Data","eventNumber:time:mPhi:mtheta:xTrigger:yTrigger:xS1Top:yS1top:xS1Bot:yS1Bot:xS2Top:yS2Top:xS2Bot:yS2Bot:xA:yA:T:S1:Foam:S2:A:Decay:xDecay:yDecay:zDecay:xExit:yExit:zExit:ePhi:eTheta:eXExit:eYExit:eZExit:eXFinal:eYFinal:eZFinal:E:ELost:fracELost:ELostDetect:fracELostDetect");
+	TFile *outf= new TFile("C:\\Users\\Austin\\Desktop\\11_24_MC_Signal_10MEvents.root","recreate");
+	TNtuple * ntuple = new TNtuple("Data","Data","eventNumber:time:mPhi:mtheta:xTrigger:yTrigger:xS1Top:yS1top:xS1Bot:yS1Bot:xS2Top:yS2Top:xS2Bot:yS2Bot:xA:yA:distance:distanceSignal:T:S1:Foam:S2:A:Decay:xDecay:yDecay:zDecay:xExit:yExit:zExit:ePhi:eTheta:eXExit:eYExit:eZExit:eXFinal:eYFinal:eZFinal:E:ELost:fracELost:ELostDetect:fracELostDetect");
 	
 	for(int i = 0; i<events; i++)
 	{
@@ -48,12 +48,13 @@ int _tmain(int argc, _TCHAR* argv[])
 		if(muon.decay)  e = getElectron(muon.xDecay, muon.yDecay, muon.zDecay);
 
 		//output to TTree here 
-		float entry[] = {i, time, muon.phi, muon.theta, muon.xTPlane, muon.yTPlane, muon.xS1PlaneT, muon.yS1PlaneT, muon.xS1PlaneB, muon.yS1PlaneB, muon.xS2PlaneT, muon.yS2PlaneT, muon.xS2PlaneB, muon.yS2PlaneB, muon.xAPlane, muon.yAPlane, muon.T, muon.S1, muon.Foam, muon.S2, muon.A, muon.decay, muon.xDecay, muon.yDecay, muon.zDecay, muon.xExit, muon.yExit, muon.zExit, e.phi, e.theta, e.xExit, e.yExit, e.zExit, e.xFinal, e.yFinal, e.zFinal, e.energy, e.energyLoss, e.fractionalEnergyLoss, e.energyLossDetected, e.fractionalEnergyLossDetected};
+		float entry[] = {i, time, muon.phi, muon.theta, muon.xTPlane, muon.yTPlane, muon.xS1PlaneT, muon.yS1PlaneT, muon.xS1PlaneB, muon.yS1PlaneB, muon.xS2PlaneT, muon.yS2PlaneT, muon.xS2PlaneB, muon.yS2PlaneB, muon.xAPlane, muon.yAPlane, muon.distance, muon.distanceSignal, muon.T, muon.S1, muon.Foam, muon.S2, muon.A, muon.decay, muon.xDecay, muon.yDecay, muon.zDecay, muon.xExit, muon.yExit, muon.zExit, e.phi, e.theta, e.xExit, e.yExit, e.zExit, e.xFinal, e.yFinal, e.zFinal, e.energy, e.energyLoss, e.fractionalEnergyLoss, e.energyLossDetected, e.fractionalEnergyLossDetected};
 		ntuple->Fill(entry);
 
 		if(i%1000 == 0) std::cout << i <<std::endl;
 
 		//output for debugging, comment out when making large samples!
+		
 		/*
 		std::cout << "Trajectory: " << muon.phi<< " " <<muon.theta << std::endl;
 		std::cout << std::endl;
@@ -66,7 +67,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		std::cout << std::endl;
 		std::cout << "Trigger: "<<muon.T<< " " <<muon.S1<<" " << muon.Foam<< " " <<muon.S2<<" " << muon.A<<" " <<muon.decay << std::endl;
 		std::cout << "Decay Coordinates: "<<muon.xDecay<<" " <<muon.yDecay<<" " <<muon.zDecay << std::endl;
-		std::cout << "Exit Coordinates: "<<muon.xExit<<" " << muon.yExit<<" " << muon.zExit<<" " << muon.distance << std::endl;
+		std::cout << "Exit Coordinates: "<<muon.xExit<<" " << muon.yExit<<" " << muon.zExit<<" " << muon.distance << " " << muon.distanceSignal <<  std::endl;
 		std::cout << std::endl;
 		std::cout << "e Trajectory: " << e.phi << " " <<e.theta << std::endl;
 		std::cout << "e Origin: " << e.xOrigin << " " << e.yOrigin << " " << e.zOrigin << std::endl;
@@ -77,6 +78,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		std::cout << std::endl;
 		std::cout << std::endl;
 		*/
+		
 	}
 	outf->Write();
 	outf->Close();

@@ -200,17 +200,28 @@ Muon getEvent(float time, bool SignalOnly)
 	muon.yExit = muon.yTPlane+sin(muon.phi)*tan(muon.theta)*muon.zExit;
 	muon.distance = pow((double)pow(muon.zExit-L1,2)+pow(muon.xExit-muon.xS1PlaneT,2)+pow(muon.yExit-muon.yS1PlaneT,2),0.5);
 
+	//calculating distance that is spent in the scintillator region only
+	if(muon.zExit < L1+zS1 && muon.zExit > L1) muon.distanceSignal = pow((double)pow(muon.zExit-L1,2)+pow(muon.xExit-muon.xS1PlaneT,2)+pow(muon.yExit-muon.yS1PlaneT,2),0.5);
+	else if(muon.zExit > L1+zS1 && muon.zExit < L1+zS1+L_Foam && muon.zExit > L1) muon.distanceSignal = pow((double)pow(zS1,2)+pow(muon.xS1PlaneB-muon.xS1PlaneT,2)+pow(muon.yS1PlaneB-muon.yS1PlaneT,2),0.5);
+	else if(muon.zExit > L1) muon.distanceSignal = pow((double)pow(muon.zExit-L1,2)+pow(muon.xExit-muon.xS1PlaneT,2)+pow(muon.yExit-muon.yS1PlaneT,2),0.5)-pow((double)pow(L_Foam,2)+pow(muon.xS2PlaneT-muon.xS1PlaneB,2)+pow(muon.yS2PlaneT-muon.yS1PlaneB,2),0.5);
+
 	//see if it decays, assuming probability is weighted by rate*distance/(characteristic thickness of detector (3 middle slabs))
 	//if it does decay, roll a dice to see how far along it's path it goes
     // can override this by specifying SignalOnly
-	if((muon.distance*decayRate/(2*zS1+L_Foam) > getRandom()) || SignalOnly)
+
+	if((muon.distanceSignal*decayRate/(2.0*zS1) > getRandom()) || SignalOnly)
 	{
-		muon.decay = true;
-		//relative distance it gets before the track decays
-		float r = getRandom();
-		muon.xDecay = muon.xS1PlaneT+cos(muon.phi)*tan(muon.theta)*r*(muon.zExit-L1);
-		muon.yDecay = muon.yS1PlaneT+sin(muon.phi)*tan(muon.theta)*r*(muon.zExit-L1);
-		muon.zDecay = L1+r*(muon.zExit-L1);
+		while(muon.decay == false)
+		{
+			muon.decay = true;
+			//relative distance it gets before the track decays
+			float r = getRandom();
+			muon.xDecay = muon.xS1PlaneT+cos(muon.phi)*tan(muon.theta)*r*(muon.zExit-L1);
+			muon.yDecay = muon.yS1PlaneT+sin(muon.phi)*tan(muon.theta)*r*(muon.zExit-L1);
+			muon.zDecay = L1+r*(muon.zExit-L1);
+
+			if(muon.zDecay > L1+zS1 && muon.zDecay < L1+zS1+L_Foam && foamDensity*(muon.distance-muon.distanceSignal)/(foamDensity*(muon.distance-muon.distanceSignal)+scintillatorDensity*muon.distanceSignal) < getRandom()) muon.decay = false;
+		}
 	}
 	else muon.decay = false;
 
