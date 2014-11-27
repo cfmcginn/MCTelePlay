@@ -18,8 +18,8 @@
 const Int_t nHistPeaks = 3;
 const std::string peakStr[nHistPeaks] = {"Mean1", "Mean2", "Mean3"};
 
-TH1F* peakSumCh1_p[nHistPeaks];
-TH1F* peakSumCh2_p[nHistPeaks];
+TH1F* peakTwoSumCh1_p[nHistPeaks];
+TH1F* peakTwoSumCh2_p[nHistPeaks];
 TH1F* peakStartCh1_p[nHistPeaks];
 TH1F* peakStartCh2_p[nHistPeaks];
 TH1F* peakEndCh1_p[nHistPeaks];
@@ -28,6 +28,7 @@ TH1F* peakWidthCh1_p[nHistPeaks];
 TH1F* peakWidthCh2_p[nHistPeaks];
 
 TH1F* decayTimeCh1_p[nHistPeaks];
+TH1F* peakOneSumCh1_p[nHistPeaks];
 
 void handsomeTH1(TH1 *a = 0, Int_t col = 1, Float_t size = 1, Int_t markerstyle = 20)
 {
@@ -59,18 +60,19 @@ void niceTH1(TH1* uglyTH1, float max , float min, float ndivX, float ndivY, Int_
 void BookHists(Bool_t isCh2 = false)
 {
   for(Int_t iter = 0; iter < nHistPeaks; iter++){
-    peakSumCh1_p[iter] = new TH1F(Form("peak%sSumCh1_h", peakStr[iter].c_str()), Form("peak%sSumCh1_h", peakStr[iter].c_str()), 30, 0.0001, 149.9999);
-    peakStartCh1_p[iter] = new TH1F(Form("peak%sStartCh1_h", peakStr[iter].c_str()), Form("peak%sStartCh1_h", peakStr[iter].c_str()), 30, 0.0001, 9.9999);
-    peakEndCh1_p[iter] = new TH1F(Form("peak%sEndCh1_h", peakStr[iter].c_str()), Form("peak%sEndCh1_h", peakStr[iter].c_str()), 30, 0.0001, 9.9999);
-    peakWidthCh1_p[iter] = new TH1F(Form("peak%sWidthCh1_h", peakStr[iter].c_str()), Form("peak%sWidthCh1_h", peakStr[iter].c_str()), 30, 0.0001, 9.9999);
+    peakTwoSumCh1_p[iter] = new TH1F(Form("peakTwo%sSumCh1_h", peakStr[iter].c_str()), Form("peakTwo%sSumCh1_h", peakStr[iter].c_str()), 60, 0.0001, 149.9999);
+    peakStartCh1_p[iter] = new TH1F(Form("peak%sStartCh1_h", peakStr[iter].c_str()), Form("peak%sStartCh1_h", peakStr[iter].c_str()), 60, 0.0001, 9.9999);
+    peakEndCh1_p[iter] = new TH1F(Form("peak%sEndCh1_h", peakStr[iter].c_str()), Form("peak%sEndCh1_h", peakStr[iter].c_str()), 60, 0.0001, 9.9999);
+    peakWidthCh1_p[iter] = new TH1F(Form("peak%sWidthCh1_h", peakStr[iter].c_str()), Form("peak%sWidthCh1_h", peakStr[iter].c_str()), 60, 0.0001, 9.9999);
 
-    decayTimeCh1_p[iter] = new TH1F(Form("decayTime%sCh1_h", peakStr[iter].c_str()), Form("decayTime%sCh1_h", peakStr[iter].c_str()), 30, 0.0001, 9.9999);
+    decayTimeCh1_p[iter] = new TH1F(Form("decayTime%sCh1_h", peakStr[iter].c_str()), Form("decayTime%sCh1_h", peakStr[iter].c_str()), 45, 0.0001, 8.9999);
+    peakOneSumCh1_p[iter] = new TH1F(Form("peakOne%sSumCh1_h", peakStr[iter].c_str()), Form("peakOne%sSumCh1_h", peakStr[iter].c_str()), 100, 0.0001, 199.9999);
 
     if(isCh2){
-      peakSumCh2_p[iter] = new TH1F(Form("peak%sSumCh2_h", peakStr[iter].c_str()), Form("peak%sSumCh2_h", peakStr[iter].c_str()), 30, 0.0001, 149.9999);
-      peakStartCh2_p[iter] = new TH1F(Form("peak%sStartCh2_h", peakStr[iter].c_str()), Form("peak%sStartCh2_h", peakStr[iter].c_str()), 30, -0.1999, .9999);
-      peakEndCh2_p[iter] = new TH1F(Form("peak%sEndCh2_h", peakStr[iter].c_str()), Form("peak%sEndCh2_h", peakStr[iter].c_str()), 30, -0.1999, .9999);
-      peakWidthCh2_p[iter] = new TH1F(Form("peak%sWidthCh2_h", peakStr[iter].c_str()), Form("peak%sWidthCh2_h", peakStr[iter].c_str()), 30, 0.0001, 1.1999);
+      peakTwoSumCh2_p[iter] = new TH1F(Form("peakTwo%sSumCh2_h", peakStr[iter].c_str()), Form("peakTwo%sSumCh2_h", peakStr[iter].c_str()), 60, 0.0001, 149.9999);
+      peakStartCh2_p[iter] = new TH1F(Form("peak%sStartCh2_h", peakStr[iter].c_str()), Form("peak%sStartCh2_h", peakStr[iter].c_str()), 60, -0.1999, .9999);
+      peakEndCh2_p[iter] = new TH1F(Form("peak%sEndCh2_h", peakStr[iter].c_str()), Form("peak%sEndCh2_h", peakStr[iter].c_str()), 60, -0.1999, .9999);
+      peakWidthCh2_p[iter] = new TH1F(Form("peak%sWidthCh2_h", peakStr[iter].c_str()), Form("peak%sWidthCh2_h", peakStr[iter].c_str()), 60, 0.0001, 1.1999);
     }
   }
 
@@ -118,21 +120,21 @@ void ThreeFormat(TH1* inHist1_p, TH1* inHist2_p, TH1* inHist3_p)
 }
 
 
-void FullThreeFormat(TH1* inHist1_p, TH1* inHist2_p, TH1* inHist3_p, Int_t startBin)
+void FullThreeFormat(TH1* inHist1_p, TH1* inHist2_p, TH1* inHist3_p)
 {
   Float_t maxVal = 0;
   Float_t minVal = 0;
-  for(Int_t iter = startBin; iter < inHist1_p->GetNbinsX(); iter++){
+  for(Int_t iter = 0; iter < inHist1_p->GetNbinsX(); iter++){
     if(inHist1_p->GetBinContent(iter+1) + inHist1_p->GetBinError(iter+1) > maxVal) maxVal = inHist1_p->GetBinContent(iter+1) + inHist1_p->GetBinError(iter+1);
     if(inHist1_p->GetBinContent(iter+1) - inHist1_p->GetBinError(iter+1) < minVal) minVal = inHist1_p->GetBinContent(iter+1) - inHist1_p->GetBinError(iter+1);
   }
 
-  for(Int_t iter = startBin; iter < inHist2_p->GetNbinsX(); iter++){
+  for(Int_t iter = 0; iter < inHist2_p->GetNbinsX(); iter++){
     if(inHist2_p->GetBinContent(iter+1) + inHist2_p->GetBinError(iter+1) > maxVal) maxVal = inHist2_p->GetBinContent(iter+1) + inHist2_p->GetBinError(iter+1);
     if(inHist2_p->GetBinContent(iter+1) - inHist2_p->GetBinError(iter+1) < minVal) minVal = inHist2_p->GetBinContent(iter+1) - inHist2_p->GetBinError(iter+1);
   }
 
-  for(Int_t iter = startBin; iter < inHist3_p->GetNbinsX(); iter++){
+  for(Int_t iter = 0; iter < inHist3_p->GetNbinsX(); iter++){
     if(inHist3_p->GetBinContent(iter+1) + inHist3_p->GetBinError(iter+1) > maxVal) maxVal = inHist3_p->GetBinContent(iter+1) + inHist3_p->GetBinError(iter+1);
     if(inHist3_p->GetBinContent(iter+1) - inHist3_p->GetBinError(iter+1) < minVal) minVal = inHist3_p->GetBinContent(iter+1) - inHist3_p->GetBinError(iter+1);
   }
@@ -162,8 +164,8 @@ void SetTitleHist(TH1* inHist_p, const std::string xTitle, const std::string yTi
 void FormatAllHists(Bool_t isCh2 = false)
 {
   for(Int_t iter = 0; iter < nHistPeaks; iter++){
-    FormatHist(peakSumCh1_p[iter]);
-    SetTitleHist(peakSumCh1_p[iter], Form("peakSum [Volt]"), "Counts");
+    FormatHist(peakTwoSumCh1_p[iter]);
+    SetTitleHist(peakTwoSumCh1_p[iter], Form("peakTwoSum [Volt]"), "Counts");
     
     FormatHist(peakStartCh1_p[iter]);
     SetTitleHist(peakStartCh1_p[iter], Form("peakStartx10^{6} [#mus]"), "Counts");
@@ -177,9 +179,12 @@ void FormatAllHists(Bool_t isCh2 = false)
     FormatHist(decayTimeCh1_p[iter]);
     SetTitleHist(decayTimeCh1_p[iter], Form("decayTimex10^{6} [#mus]"), "Counts");
  
+    FormatHist(peakOneSumCh1_p[iter]);
+    SetTitleHist(peakOneSumCh1_p[iter], Form("peakOneSum [Volt]"), "Counts");
+
     if(isCh2){
-      FormatHist(peakSumCh2_p[iter]);
-      SetTitleHist(peakSumCh2_p[iter], Form("peakSum [Volt]"), "Counts");
+      FormatHist(peakTwoSumCh2_p[iter]);
+      SetTitleHist(peakTwoSumCh2_p[iter], Form("peakTwoSum [Volt]"), "Counts");
       
       FormatHist(peakStartCh2_p[iter]);
       SetTitleHist(peakStartCh2_p[iter], Form("peakStartx10^{6} [#mus]"), "Counts");
@@ -199,14 +204,16 @@ void FormatAllHists(Bool_t isCh2 = false)
 void CleanupHists(Bool_t isCh2 = false)
 {
   for(Int_t iter = 0; iter < nHistPeaks; iter++){
-    delete peakSumCh1_p[iter];
+    delete peakTwoSumCh1_p[iter];
     delete peakStartCh1_p[iter];
     delete peakEndCh1_p[iter];
     delete peakWidthCh1_p[iter];
     delete decayTimeCh1_p[iter];
+    delete peakOneSumCh1_p[iter];
+
 
     if(isCh2){
-      delete peakSumCh2_p[iter];
+      delete peakTwoSumCh2_p[iter];
       delete peakStartCh2_p[iter];
       delete peakEndCh2_p[iter];
       delete peakWidthCh2_p[iter];
@@ -222,14 +229,15 @@ void GetMuonHists(TFile* muonHistFile_p, Bool_t isCh2 = false)
   std::cout << "Get Muon Hists" << std::endl;
 
   for(Int_t iter = 0; iter < nHistPeaks; iter++){
-    peakSumCh1_p[iter] = (TH1F*)muonHistFile_p->Get(Form("peak%sSumCh1_h", peakStr[iter].c_str()));
+    peakTwoSumCh1_p[iter] = (TH1F*)muonHistFile_p->Get(Form("peakTwo%sSumCh1_h", peakStr[iter].c_str()));
     peakStartCh1_p[iter] = (TH1F*)muonHistFile_p->Get(Form("peak%sStartCh1_h", peakStr[iter].c_str()));
     peakEndCh1_p[iter] = (TH1F*)muonHistFile_p->Get(Form("peak%sEndCh1_h", peakStr[iter].c_str()));
     peakWidthCh1_p[iter] = (TH1F*)muonHistFile_p->Get(Form("peak%sWidthCh1_h", peakStr[iter].c_str()));
     decayTimeCh1_p[iter] = (TH1F*)muonHistFile_p->Get(Form("decayTime%sCh1_h", peakStr[iter].c_str()));
+    peakOneSumCh1_p[iter] = (TH1F*)muonHistFile_p->Get(Form("peakOne%sSumCh1_h", peakStr[iter].c_str()));
 
     if(isCh2){
-      peakSumCh2_p[iter] = (TH1F*)muonHistFile_p->Get(Form("peak%sSumCh2_h", peakStr[iter].c_str()));
+      peakTwoSumCh2_p[iter] = (TH1F*)muonHistFile_p->Get(Form("peakTwo%sSumCh2_h", peakStr[iter].c_str()));
       peakStartCh2_p[iter] = (TH1F*)muonHistFile_p->Get(Form("peak%sStartCh2_h", peakStr[iter].c_str()));
       peakEndCh2_p[iter] = (TH1F*)muonHistFile_p->Get(Form("peak%sEndCh2_h", peakStr[iter].c_str()));
       peakWidthCh2_p[iter] = (TH1F*)muonHistFile_p->Get(Form("peak%sWidthCh2_h", peakStr[iter].c_str()));
