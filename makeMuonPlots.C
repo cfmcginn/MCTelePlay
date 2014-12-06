@@ -10,6 +10,8 @@
 #include "TLine.h"
 #include "TF1.h"
 
+const Int_t boundOffset = 1;
+
 void drawMeanLine(TH1* inHist_p, Int_t lineStyle = 2, Int_t lineColor = 1)
 {
   TLine* oneLine_p = new TLine(inHist_p->GetMean(), 0.0, inHist_p->GetMean(), TMath::Power( inHist_p->GetBinContent(inHist_p->GetMaximumBin()), 1.5));
@@ -22,7 +24,7 @@ void drawMeanLine(TH1* inHist_p, Int_t lineStyle = 2, Int_t lineColor = 1)
 
 void fitExpo(TH1* inHist_p, TF1* inFit_p)
 {
-  Float_t bound = inHist_p->GetBinLowEdge(inHist_p->GetMaximumBin());
+  Float_t bound = inHist_p->GetBinLowEdge(inHist_p->GetMaximumBin() + boundOffset);
   Float_t max = inHist_p->GetBinContent(inHist_p->GetMaximumBin());
   Float_t mean = inHist_p->GetMean();
 
@@ -43,7 +45,7 @@ void makeResiduals(TH1* inHist_p, TF1* inFit_p, TH1* outHist_p)
   const Int_t nBins = inHist_p->GetNbinsX();
   Int_t maxBin = inHist_p->GetMaximumBin();
   for(Int_t iter = 0; iter < nBins; iter++){
-    if(iter < maxBin){
+    if(iter < maxBin + boundOffset){
       outHist_p->SetBinContent(iter+1, 0);
     }
     else{

@@ -260,13 +260,6 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
       nPeakCh1_++;
     }
 
-    if(nPeakCh1_ < 2) nCh_ = 0;
-    else{
-      std::ofstream outTxt;
-      outTxt.open(Form("%s_TwoPeaks.txt", outName.c_str()), std::ios_base::app);
-      outTxt << listOfFiles[fileIter].c_str() << std::endl;
-    }
-
     meanCh1_[2] = getCutMean(*voltOutCh1_p, nPeakCh1_, peakStartCh1_, peakEndCh1_);
     meanCh1_[1] = (meanCh1_[2] + meanCh1_[0])/2.0;
 
@@ -321,6 +314,14 @@ int makeMuonTree(const std::string fList = "", const Bool_t isCh2 = false)
 	  peakEndTimeCh2_[peakIter][sumIter] = timeStamp_[peakEndCh2_[peakIter][sumIter]];
 	}
       }
+    }
+
+
+    if(nPeakCh1_ < 2) nCh_ = 0;
+    else if(TMath::Abs(peakSumCh1_[1][2]) > 5){
+      std::ofstream outTxt;
+      outTxt.open(Form("%s_TwoPeaks.txt", outName.c_str()), std::ios_base::app);
+      outTxt << listOfFiles[fileIter].c_str() << std::endl;
     }
 
     muonTree_p->Fill();

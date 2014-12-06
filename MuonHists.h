@@ -65,7 +65,7 @@ void BookHists(Bool_t isCh2 = false)
     peakEndCh1_p[iter] = new TH1F(Form("peak%sEndCh1_h", peakStr[iter].c_str()), Form("peak%sEndCh1_h", peakStr[iter].c_str()), 60, 0.0001, 9.9999);
     peakWidthCh1_p[iter] = new TH1F(Form("peak%sWidthCh1_h", peakStr[iter].c_str()), Form("peak%sWidthCh1_h", peakStr[iter].c_str()), 60, 0.0001, 9.9999);
 
-    decayTimeCh1_p[iter] = new TH1F(Form("decayTime%sCh1_h", peakStr[iter].c_str()), Form("decayTime%sCh1_h", peakStr[iter].c_str()), 45, 0.0001, 8.9999);
+    decayTimeCh1_p[iter] = new TH1F(Form("decayTime%sCh1_h", peakStr[iter].c_str()), Form("decayTime%sCh1_h", peakStr[iter].c_str()), 30, 0.0001, 8.9999);
     peakOneSumCh1_p[iter] = new TH1F(Form("peakOne%sSumCh1_h", peakStr[iter].c_str()), Form("peakOne%sSumCh1_h", peakStr[iter].c_str()), 100, 0.0001, 199.9999);
 
     if(isCh2){

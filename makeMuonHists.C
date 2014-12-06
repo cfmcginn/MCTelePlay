@@ -11,7 +11,7 @@
 #include "TMath.h"
 
 
-const Float_t sumCut = 20;
+const Float_t sumCut = 12;
 
 int makeMuonHists(const std::string inName, Bool_t isCh2 = false)
 {
