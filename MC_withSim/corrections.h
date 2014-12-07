@@ -6,9 +6,10 @@
 #include "TNtuple.h"
 #include "TSVDUnfold.h"
 #include "TRandom3.h"
+#include "TMath.h"
 #include <iostream>
 
-TH1D* unFold(double resolution = 0.1, double energyScale = 1.7, double cutoff = 52.83, int nBins = 150, int reg = 3, int file = 0, const char *title = "result")
+TH1D* unFold(double resolution = 0.1, double energyScale = 1.7, double cutoff = 52.83, int nBins = 150, int reg = 3, int file = 0, int sumMethod = 2, const char *title = "result")
 {
 	gSystem->Load("libTree");
 	TFile * fin;
@@ -27,10 +28,13 @@ TH1D* unFold(double resolution = 0.1, double energyScale = 1.7, double cutoff = 
 
 	TH1D * data;
 	TFile * dataF = new TFile("C:\\Users\\Austin\\Desktop\\8_811_Project\\Data\\lvmCh1_MERGE_MuonHists.root","read");
-	TH1D * dataTemp = (TH1D*)dataF->Get("peakTwoMean2SumCh1_h");
+	TH1D* dataTemp;
+	if(sumMethod == 1) dataTemp = (TH1D*)dataF->Get("peakTwoMean1SumCh1_h");
+	else if(sumMethod == 2) dataTemp = (TH1D*)dataF->Get("peakTwoMean2SumCh1_h");
+	else if(sumMethod == 3) dataTemp = (TH1D*)dataF->Get("peakTwoMean3SumCh1_h");
 	data = (TH1D*) dataTemp->Clone("data");
 	
-	data->Rebin(1200/nBins);
+	//data->Rebin(1200/nBins);
 
 	TRandom3 R;
 
@@ -44,7 +48,8 @@ TH1D* unFold(double resolution = 0.1, double energyScale = 1.7, double cutoff = 
 		double recoE = ELostDetect*energyScale;
 		recoE = R.Gaus(recoE, resolution*recoE);
 
-		if(recoE>20 && E>20.0/energyScale) 
+		//previously used 20 here
+		if(recoE>10 && E>10.0/energyScale) 
 		{
 			genMC->Fill(E);
 			recoMC->Fill(recoE);
@@ -66,9 +71,11 @@ TH1D* unFold(double resolution = 0.1, double energyScale = 1.7, double cutoff = 
 	TH2D* errors = new TH2D("errors","errors",nBins,0,150,nBins,0,150);
 	for(int i = 1; i<=nBins; i++)
 	{
-		errors->SetBinContent(i,i,data->GetBinError(i));
+		errors->SetBinContent(i,i,TMath::Power(data->GetBinError(i),2));
 	}
 	TH2D* unCov = tsvd->GetUnfoldCovMatrix(errors,100);
+	unCov->Add(tsvd->GetAdetCovMatrix(10));
+	unCov->Add(tsvd->GetXtau());
 
 	D->Write();
 	SV->Write();
@@ -78,10 +85,7 @@ TH1D* unFold(double resolution = 0.1, double energyScale = 1.7, double cutoff = 
 	//propagating stat errors
 	for(int i=1; i<=nBins; i++)
 	{
-		for(int j=1; j<=nBins; j++)
-		{
-			result->SetBinError(j,result->GetBinError(j)+unCov->GetBinContent(i,j));
-		}
+		result->SetBinError(i,TMath::Power(unCov->GetBinContent(i,i),0.5));
 	}
 
 	genMC->Scale((double)nBins/((150.0*genMC->Integral(1,150))));

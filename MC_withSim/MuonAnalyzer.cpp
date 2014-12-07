@@ -18,28 +18,34 @@ int _tmain(int argc, _TCHAR* argv[])
 	int reg = 3;
 		
 	TH1D * data; 
-	data = unFold(reso ,EC , cutoff, nBins, reg, 0, "resultRaw");
+	data = unFold(reso ,EC , cutoff, nBins, reg, 0, 2, "resultRaw");
 
 	TH1D * data_EC_UP;
-	data_EC_UP = unFold(reso ,EC+0.15 , cutoff, nBins, reg, 0, "EC_Up");
+	data_EC_UP = unFold(reso ,EC+0.15 , cutoff, nBins, reg, 0, 2, "EC_Up");
 
 	TH1D * data_EC_DOWN;
-	data_EC_DOWN = unFold(reso ,EC-0.15 , cutoff, nBins, reg, 0, "EC_Down");
+	data_EC_DOWN = unFold(reso ,EC-0.15 , cutoff, nBins, reg, 0, 2,"EC_Down");
 
 	TH1D * data_Reso_UP; 
-	data_Reso_UP = unFold(reso-0.05 ,EC , cutoff, nBins, reg, 0, "reso_Up");
+	data_Reso_UP = unFold(reso-0.05 ,EC , cutoff, nBins, reg, 0, 2,"reso_Up");
 
 	TH1D * data_Reso_DOWN; 
-	data_Reso_DOWN = unFold(reso+0.05 ,EC , cutoff, nBins, reg, 0, "reso_Down");
+	data_Reso_DOWN = unFold(reso+0.05 ,EC , cutoff, nBins, reg, 0, 2,"reso_Down");
 
 	TH1D * data_Reg_UP; 
-	data_Reg_UP = unFold(reso ,EC , cutoff, nBins, reg+1, 0, "reg_Up");
+	data_Reg_UP = unFold(reso ,EC , cutoff, nBins, reg+1, 0, 2,"reg_Up");
 
 	TH1D * data_Reg_DOWN; 
-	data_Reg_DOWN = unFold(reso ,EC , cutoff, nBins, reg-1, 0, "reg_Down");
+	data_Reg_DOWN = unFold(reso ,EC , cutoff, nBins, reg-1, 0, 2,"reg_Down");
+
+	TH1D * Sum1; 
+	Sum1 = unFold(reso ,EC , cutoff, nBins, reg, 0, 1,"Sum1");
+
+	TH1D * Sum3; 
+	Sum3 = unFold(reso ,EC , cutoff, nBins, reg, 0, 3,"Sum3");
 
 	TH1D * data_MC_input; 
-	data_MC_input = unFold(reso ,EC , cutoff, nBins, reg, 1, "MC_Input");
+	data_MC_input = unFold(reso ,EC , cutoff, nBins, reg, 1, 2,"MC_Input");
 
 	data_EC_UP->Add(data,-1);
 	data_EC_DOWN->Add(data,-1);
@@ -47,6 +53,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	data_Reso_DOWN->Add(data,-1);
 	data_Reg_UP->Add(data,-1);
 	data_Reg_DOWN->Add(data,-1);
+	Sum1->Add(data,-1);
+	Sum3->Add(data,-1);
 	data_MC_input->Add(data,-1);
 
 	TH1D * sys_UP = new TH1D("sys_UP","sys_UP",nBins,0,150);
@@ -66,6 +74,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		if(data_Reg_UP->GetBinContent(i) >0 || data_Reg_DOWN->GetBinContent(i) >0) errorUp = errorUp + TMath::Power(TMath::Max(data_Reg_UP->GetBinContent(i),data_Reg_DOWN->GetBinContent(i)),2);
 		if(data_Reg_UP->GetBinContent(i) <0 || data_Reg_DOWN->GetBinContent(i) <0) errorDown = errorDown + TMath::Power(TMath::Min(data_Reg_UP->GetBinContent(i),data_Reg_DOWN->GetBinContent(i)),2);
 
+		if(Sum1->GetBinContent(i) >0 || Sum3->GetBinContent(i) >0) errorUp = errorUp + TMath::Power(TMath::Max(Sum1->GetBinContent(i),Sum3->GetBinContent(i)),2);
+		if(Sum1->GetBinContent(i) <0 || Sum3->GetBinContent(i) <0) errorDown = errorDown + TMath::Power(TMath::Min(Sum1->GetBinContent(i),Sum3->GetBinContent(i)),2);
+
 		errorUp = TMath::Power(errorUp,0.5);
 		errorDown = TMath::Power(errorDown,0.5);
 
@@ -84,12 +95,13 @@ int _tmain(int argc, _TCHAR* argv[])
 	data_MC_input->Write();
 	sys_UP->Write();
 	sys_DOWN->Write();
-	
+	Sum1->Write();
+	Sum3->Write();
 
-	TF1 * theory = new TF1("theory","[0]*TMath::Power((x/52.83),2)*(6-4*(x/52.83)+0.0023*5.33*(5/(3*TMath::Power((x/52.83),2))+16*(x/52.83)/3.0+4./(x/52.83)+(12-8*(x/52.83))*TMath::Log(1/(x/52.83)-1)-8))",20/EC,cutoff);
+	TF1 * theory = new TF1("theory","[0]*TMath::Power((x/52.83),2)*(6-4*(x/52.83)+0.0023*5.33*(5/(3*TMath::Power((x/52.83),2))+16*(x/52.83)/3.0+4./(x/52.83)+(12-8*(x/52.83))*TMath::Log(1/(x/52.83)-1)-8))",10/EC,cutoff);
 	theory->SetParameter(0,1.0);
 	double integral = 0;
-	for(int i = 1+(int)10000*(20.0/EC/cutoff); i<10000; i++)
+	for(int i = 1+(int)10000*(10.0/EC/cutoff); i<10000; i++)
 	{
 		integral = integral + cutoff/10000.0 * (double)theory->Eval((double)i/10000.0*cutoff);
 		//std::cout << i << theory->Eval((double)i/10000.0*cutoff) <<" "<< integral<< std::endl;
